@@ -1,0 +1,12 @@
+[package]
+name = "aa_proxy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aa_protocol = { path = "../aa_protocol" }
+aa_store = { path = "../aa_store" }
+anyhow.workspace = true
+clap.workspace = true
