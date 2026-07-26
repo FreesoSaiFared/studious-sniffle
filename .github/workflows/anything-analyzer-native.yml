@@ -1,0 +1,62 @@
+name: anything-analyzer-native
+
+on:
+  push:
+    branches: [anything-analyzer-native]
+  pull_request:
+    paths:
+      - 'anything-analyzer-native/**'
+      - '.github/workflows/anything-analyzer-native.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: Rust ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: anything-analyzer-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: anything-analyzer-native
+      - name: Format generated source
+        run: cargo fmt --all
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --workspace --all-targets
+      - name: Build release
+        run: cargo build --workspace --release
+      - name: CLI self-test and canonical result
+        shell: bash
+        run: ./target/release/aa_cli self-test --db aa-ci.db --result dt-result.json
+      - name: Compiled proxy black-box smoke test
+        shell: bash
+        run: python scripts/proxy_smoke.py ./target/release/aa_proxy
+      - name: Upload Rust binaries, evidence, and formatted source
+        uses: actions/upload-artifact@v4
+        with:
+          name: anything-analyzer-native-rust-${{ matrix.os }}
+          path: |
+            anything-analyzer-native/Cargo.toml
+            anything-analyzer-native/Cargo.lock
+            anything-analyzer-native/crates
+            anything-analyzer-native/scripts
+            anything-analyzer-native/dt-result.json
+            anything-analyzer-native/aa-ci.db.json
+            anything-analyzer-native/proxy-smoke-output/proxy-smoke-result.json
+            anything-analyzer-native/target/release/aa_cli*
+            anything-analyzer-native/target/release/aa_proxy*
+          if-no-files-found: error
