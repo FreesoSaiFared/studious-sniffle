@@ -1,0 +1,6 @@
+interface:
+  display_name: "Studious Sniffle"
+  short_description: "Repo-specific patterns and workflows for studious-sniffle"
+  default_prompt: "Use the studious-sniffle repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
