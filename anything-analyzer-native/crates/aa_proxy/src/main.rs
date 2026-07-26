@@ -21,6 +21,9 @@ struct Args {
     session: String,
     #[arg(long, default_value = "127.0.0.1:8899")]
     listen: String,
+    /// Exit after accepting this many connections; zero means run forever.
+    #[arg(long, default_value_t = 0)]
+    max_connections: usize,
 }
 
 fn main() -> Result<()> {
@@ -36,19 +39,33 @@ fn main() -> Result<()> {
     let listener = TcpListener::bind(&args.listen)
         .with_context(|| format!("bind proxy listener {}", args.listen))?;
     eprintln!("aa_proxy listening on {}", args.listen);
+    let mut accepted = 0_usize;
+    let mut bounded_workers = Vec::new();
     for connection in listener.incoming() {
         match connection {
             Ok(stream) => {
                 let store = Arc::clone(&store);
                 let session = args.session.clone();
-                thread::spawn(move || {
+                let worker = thread::spawn(move || {
                     if let Err(error) = handle_client(stream, &store, &session) {
                         eprintln!("proxy client error: {error:#}");
                     }
                 });
+                accepted += 1;
+                if args.max_connections == 0 {
+                    drop(worker);
+                } else {
+                    bounded_workers.push(worker);
+                    if accepted >= args.max_connections {
+                        break;
+                    }
+                }
             }
             Err(error) => eprintln!("accept error: {error}"),
         }
+    }
+    for worker in bounded_workers {
+        let _ = worker.join();
     }
     Ok(())
 }
