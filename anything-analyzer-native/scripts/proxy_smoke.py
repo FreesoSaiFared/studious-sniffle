@@ -38,6 +38,7 @@ def free_port() -> int:
 
 
 def wait_for_port(port: int, timeout: float = 15.0) -> None:
+    """Wait for readiness. This consumes one bounded proxy connection."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -75,7 +76,7 @@ def main() -> int:
         "--listen",
         f"127.0.0.1:{proxy_port}",
         "--max-connections",
-        "1",
+        "2",
     ]
     proxy = subprocess.Popen(
         proxy_command,
