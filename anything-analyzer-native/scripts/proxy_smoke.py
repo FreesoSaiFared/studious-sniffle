@@ -26,6 +26,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(payload)
+        self.close_connection = True
 
     def log_message(self, _format: str, *args: object) -> None:
         del args
@@ -37,16 +38,17 @@ def free_port() -> int:
         return int(sock.getsockname()[1])
 
 
-def wait_for_port(port: int, timeout: float = 15.0) -> None:
-    """Wait for readiness. This consumes one bounded proxy connection."""
+def connect_when_ready(port: int, timeout: float = 15.0) -> socket.socket:
+    """Return the first successful connection, without consuming a probe connection."""
     deadline = time.monotonic() + timeout
+    last_error: OSError | None = None
     while time.monotonic() < deadline:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.settimeout(0.25)
-            if sock.connect_ex(("127.0.0.1", port)) == 0:
-                return
-        time.sleep(0.05)
-    raise TimeoutError(f"port {port} did not become ready")
+        try:
+            return socket.create_connection(("127.0.0.1", port), timeout=1)
+        except OSError as error:
+            last_error = error
+            time.sleep(0.05)
+    raise TimeoutError(f"port {port} did not become ready: {last_error}")
 
 
 def main() -> int:
@@ -76,7 +78,7 @@ def main() -> int:
         "--listen",
         f"127.0.0.1:{proxy_port}",
         "--max-connections",
-        "2",
+        "1",
     ]
     proxy = subprocess.Popen(
         proxy_command,
@@ -86,13 +88,13 @@ def main() -> int:
     )
 
     try:
-        wait_for_port(proxy_port)
         request = (
             f"GET http://127.0.0.1:{server_port}/through-proxy?probe=1 HTTP/1.1\r\n"
             f"Host: 127.0.0.1:{server_port}\r\n"
             "Connection: close\r\n\r\n"
         ).encode("ascii")
-        with socket.create_connection(("127.0.0.1", proxy_port), timeout=10) as client:
+        with connect_when_ready(proxy_port) as client:
+            client.settimeout(10)
             client.sendall(request)
             chunks: list[bytes] = []
             while True:
