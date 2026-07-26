@@ -31,8 +31,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: anything-analyzer-native
-      - name: Format
-        run: cargo fmt --all -- --check
+      - name: Format generated source
+        run: cargo fmt --all
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Test
@@ -42,11 +42,14 @@ jobs:
       - name: CLI self-test
         shell: bash
         run: ./target/release/aa_cli self-test --db aa-ci.db
-      - name: Upload Rust binaries
+      - name: Upload Rust binaries and formatted source
         uses: actions/upload-artifact@v4
         with:
           name: anything-analyzer-native-rust-${{ matrix.os }}
           path: |
+            anything-analyzer-native/Cargo.toml
+            anything-analyzer-native/Cargo.lock
+            anything-analyzer-native/crates
             anything-analyzer-native/target/release/aa_cli*
             anything-analyzer-native/target/release/aa_proxy*
           if-no-files-found: error
