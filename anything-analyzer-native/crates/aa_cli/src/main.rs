@@ -63,6 +63,9 @@ enum Command {
     SelfTest {
         #[arg(long, default_value = "aa-self-test.db")]
         db: String,
+        /// Optional canonical DT-RUN result JSON destination.
+        #[arg(long)]
+        result: Option<String>,
     },
 }
 
@@ -112,7 +115,7 @@ fn main() -> Result<()> {
             open(&db)?.export_session_json(&session, &output)?;
             println!("exported {session} to {output}");
         }
-        Command::SelfTest { db } => self_test(&db)?,
+        Command::SelfTest { db, result } => self_test(&db, result.as_deref())?,
     }
     Ok(())
 }
@@ -123,7 +126,7 @@ fn open(db: &str) -> Result<Store> {
     Ok(store)
 }
 
-fn self_test(db: &str) -> Result<()> {
+fn self_test(db: &str, result_path: Option<&str>) -> Result<()> {
     let _ = std::fs::remove_file(db);
     let store = open(db)?;
     store.create_session("self-test", "Self test", "https://example.test", unix_millis())?;
@@ -134,7 +137,23 @@ fn self_test(db: &str) -> Result<()> {
     store.add_request(request)?;
     let summary = store.summary("self-test")?;
     anyhow::ensure!(summary.request_count == 1, "self-test request count mismatch");
-    store.export_session_json("self-test", format!("{db}.json"))?;
+    let export_path = format!("{db}.json");
+    store.export_session_json("self-test", &export_path)?;
+    if let Some(result_path) = result_path {
+        let result = serde_json::json!({
+            "version": "dt-result/v1",
+            "status": "PASS",
+            "tool": "anything-analyzer-native",
+            "implementation": "rust",
+            "platform": std::env::consts::OS,
+            "summary": summary,
+            "artifacts": {
+                "database": db,
+                "session_export": export_path,
+            }
+        });
+        std::fs::write(result_path, serde_json::to_vec_pretty(&result)?)?;
+    }
     println!("self-test PASS: {}", serde_json::to_string(&summary)?);
     Ok(())
 }
