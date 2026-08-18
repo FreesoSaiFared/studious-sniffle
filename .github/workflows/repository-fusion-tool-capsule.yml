@@ -14,16 +14,18 @@ permissions:
 jobs:
   stage-tools:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Stage compact deterministic tools through gh-proxy
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p capsule/bin capsule/acquisition
+          mkdir -p capsule/bin capsule/acquisition capsule/build
 
           AST_URL='https://gh-proxy.com/https://github.com/ast-grep/ast-grep/releases/download/0.45.1/app-x86_64-unknown-linux-gnu.zip'
           DIFFT_URL='https://gh-proxy.com/https://github.com/Wilfred/difftastic/releases/download/0.69.0/difft-x86_64-unknown-linux-gnu.tar.gz'
+          MERGIRAF_COMMIT='e8e13887b85b8cb56b1dc1624c5f94e3d39182b6'
+          MERGIRAF_URL="https://gh-proxy.com/https://github.com/qundao/mirror-mergiraf/archive/${MERGIRAF_COMMIT}.zip"
 
           curl -fL --retry 3 --retry-delay 2 "$AST_URL" -o capsule/acquisition/ast-grep.zip
           unzip -tq capsule/acquisition/ast-grep.zip
@@ -39,18 +41,33 @@ jobs:
           test -n "$DIFFT_BIN"
           install -m 0755 "$DIFFT_BIN" capsule/bin/difft
 
-          sha256sum capsule/acquisition/ast-grep.zip capsule/acquisition/difftastic.tar.gz > capsule/ACQUISITION_SHA256SUMS
-          sha256sum capsule/bin/ast-grep capsule/bin/difft > capsule/BINARY_SHA256SUMS
+          curl -fL --retry 3 --retry-delay 2 "$MERGIRAF_URL" -o capsule/acquisition/mergiraf-source.zip
+          unzip -tq capsule/acquisition/mergiraf-source.zip
+          unzip -q capsule/acquisition/mergiraf-source.zip -d capsule/build/mergiraf
+          MERGIRAF_ROOT=$(find capsule/build/mergiraf -mindepth 1 -maxdepth 1 -type d -print -quit)
+          test -n "$MERGIRAF_ROOT"
+          (cd "$MERGIRAF_ROOT" && cargo build --release --locked)
+          install -m 0755 "$MERGIRAF_ROOT/target/release/mergiraf" capsule/bin/mergiraf
+
+          sha256sum capsule/acquisition/ast-grep.zip capsule/acquisition/difftastic.tar.gz capsule/acquisition/mergiraf-source.zip > capsule/ACQUISITION_SHA256SUMS
+          sha256sum capsule/bin/ast-grep capsule/bin/difft capsule/bin/mergiraf > capsule/BINARY_SHA256SUMS
           {
-            echo 'REPOSITORY_FUSION_TOOL_CAPSULE/1'
+            echo 'REPOSITORY_FUSION_TOOL_CAPSULE/2'
             echo "ast_source=$AST_URL"
             echo "difft_source=$DIFFT_URL"
+            echo "mergiraf_source=$MERGIRAF_URL"
+            echo "mergiraf_commit=$MERGIRAF_COMMIT"
+            echo "runner_rust=$(rustc --version)"
             capsule/bin/ast-grep --version
             capsule/bin/difft --version
+            capsule/bin/mergiraf --version
           } > capsule/TOOL_MANIFEST.txt
           cat capsule/TOOL_MANIFEST.txt
           cat capsule/ACQUISITION_SHA256SUMS
           cat capsule/BINARY_SHA256SUMS
+
+          # Keep artifact compact: build/source trees are represented by hashes, not duplicated.
+          rm -rf capsule/build capsule/acquisition/ast-grep capsule/acquisition/difft
 
       - name: Upload deterministic tool capsule
         uses: actions/upload-artifact@v4
