@@ -1,0 +1,81 @@
+name: repository-fusion-browser-donors
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [repository-fusion/tool-capsule-20260818]
+
+permissions:
+  contents: read
+
+jobs:
+  quarry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Retrieve pinned donors through gh-proxy and prune source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p quarry/archives quarry/snapshots quarry/provenance
+          cat > /tmp/quarry.py <<'PY'
+          import hashlib, json, os, re, sys, urllib.request, zipfile
+          from pathlib import Path
+          donors = [
+            ('multizenteam','multizen-browser','83c6898b2de3de1122b5fea88008fbbaa4677bff'),
+            ('SysAdminDoc','LocalChromeStore','556547171256b5f92a62271fe909a6709ae7c4ce'),
+            ('clearcotelabs','clearcote-profile-manager','b9719531e7e249e5bfc869dc24d650db64cf5809'),
+          ]
+          keep_ext={'.ts','.tsx','.js','.mjs','.cjs','.cs','.rs','.py','.json','.toml','.yaml','.yml','.md','.csproj','.sln','.props','.targets','.xml'}
+          keep_names={'LICENSE','LICENSE.txt','COPYING','NOTICE','README.md','package.json','yarn.lock','pnpm-lock.yaml','Cargo.toml','Cargo.lock','Directory.Build.props'}
+          focus=('profile','browser','launch','process','mcp','cdp','driver','setting','model','service','test','shortcut','window','main','store','type')
+          manifest=[]
+          for owner,repo,sha in donors:
+            url=f'https://gh-proxy.com/https://github.com/{owner}/{repo}/archive/{sha}.zip'
+            ap=Path('quarry/archives')/f'{owner}__{repo}__{sha}.zip'
+            req=urllib.request.Request(url,headers={'User-Agent':'repository-fusion-quarry/1'})
+            with urllib.request.urlopen(req,timeout=90) as r: ap.write_bytes(r.read())
+            ah=hashlib.sha256(ap.read_bytes()).hexdigest()
+            out=Path('quarry/snapshots')/f'{owner}__{repo}'
+            out.mkdir(parents=True,exist_ok=True)
+            kept=[]; total_members=0
+            with zipfile.ZipFile(ap) as z:
+              bad=z.testzip()
+              if bad: raise SystemExit(f'bad zip member {bad}')
+              names=z.namelist(); total_members=len(names)
+              roots={n.split('/')[0] for n in names if '/' in n}
+              if len(roots)!=1: raise SystemExit(f'unexpected roots {roots}')
+              root=next(iter(roots))
+              for info in z.infolist():
+                if info.is_dir(): continue
+                rel=info.filename[len(root)+1:] if info.filename.startswith(root+'/') else info.filename
+                if not rel: continue
+                low=rel.lower(); base=Path(rel).name
+                ext=Path(rel).suffix.lower()
+                sourceish=(ext in keep_ext or base in keep_names)
+                # Keep all source/config/tests for these modest repositories; drop binary/media/build payloads.
+                blocked=any(part in low.split('/') for part in ('node_modules','dist','build','out','target','.git','bin','obj'))
+                if sourceish and not blocked:
+                  dst=out/rel; dst.parent.mkdir(parents=True,exist_ok=True); dst.write_bytes(z.read(info)); kept.append(rel)
+            license_paths=[x for x in kept if Path(x).name.upper().startswith(('LICENSE','COPYING','NOTICE'))]
+            manifest.append({'repo':f'{owner}/{repo}','commit_sha':sha,'gh_proxy_url':url,'archive_sha256':ah,'archive_bytes':ap.stat().st_size,'archive_members':total_members,'retained_files':len(kept),'retained_bytes':sum((out/x).stat().st_size for x in kept),'license_paths':license_paths,'focus_hits':sum(1 for x in kept if any(k in x.lower() for k in focus))})
+          Path('quarry/provenance/donor-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print(json.dumps(manifest,indent=2))
+          PY
+          python3 /tmp/quarry.py
+          sha256sum quarry/archives/*.zip > quarry/provenance/archive-sha256s.txt
+          rm -rf quarry/archives
+          tar -czf browser-profile-donor-quarry.tar.gz quarry
+          sha256sum browser-profile-donor-quarry.tar.gz > browser-profile-donor-quarry.tar.gz.sha256
+          cat browser-profile-donor-quarry.tar.gz.sha256
+
+      - name: Upload donor quarry
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-fusion-browser-profile-donors
+          path: |
+            browser-profile-donor-quarry.tar.gz
+            browser-profile-donor-quarry.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 7
