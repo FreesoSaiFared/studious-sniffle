@@ -1,0 +1,58 @@
+name: repository-fusion-tool-capsule
+
+on:
+  push:
+    branches:
+      - repository-fusion/tool-capsule-20260818
+
+permissions:
+  contents: read
+
+jobs:
+  stage-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Stage compact deterministic tools through gh-proxy
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p capsule/bin capsule/acquisition
+
+          AST_URL='https://gh-proxy.com/https://github.com/ast-grep/ast-grep/releases/download/0.45.1/app-x86_64-unknown-linux-gnu.zip'
+          DIFFT_URL='https://gh-proxy.com/https://github.com/Wilfred/difftastic/releases/download/0.69.0/difft-x86_64-unknown-linux-gnu.tar.gz'
+
+          curl -fL --retry 3 --retry-delay 2 "$AST_URL" -o capsule/acquisition/ast-grep.zip
+          unzip -tq capsule/acquisition/ast-grep.zip
+          unzip -q capsule/acquisition/ast-grep.zip -d capsule/acquisition/ast-grep
+          AST_BIN=$(find capsule/acquisition/ast-grep -type f -name ast-grep -print -quit)
+          test -n "$AST_BIN"
+          install -m 0755 "$AST_BIN" capsule/bin/ast-grep
+
+          curl -fL --retry 3 --retry-delay 2 "$DIFFT_URL" -o capsule/acquisition/difftastic.tar.gz
+          tar -tzf capsule/acquisition/difftastic.tar.gz >/dev/null
+          tar -xzf capsule/acquisition/difftastic.tar.gz -C capsule/acquisition
+          DIFFT_BIN=$(find capsule/acquisition -type f -name difft -print -quit)
+          test -n "$DIFFT_BIN"
+          install -m 0755 "$DIFFT_BIN" capsule/bin/difft
+
+          sha256sum capsule/acquisition/ast-grep.zip capsule/acquisition/difftastic.tar.gz > capsule/ACQUISITION_SHA256SUMS
+          sha256sum capsule/bin/ast-grep capsule/bin/difft > capsule/BINARY_SHA256SUMS
+          {
+            echo 'REPOSITORY_FUSION_TOOL_CAPSULE/1'
+            echo "ast_source=$AST_URL"
+            echo "difft_source=$DIFFT_URL"
+            capsule/bin/ast-grep --version
+            capsule/bin/difft --version
+          } > capsule/TOOL_MANIFEST.txt
+          cat capsule/TOOL_MANIFEST.txt
+          cat capsule/ACQUISITION_SHA256SUMS
+          cat capsule/BINARY_SHA256SUMS
+
+      - name: Upload deterministic tool capsule
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-fusion-tool-capsule-linux-x64
+          path: capsule/
+          if-no-files-found: error
+          retention-days: 7
