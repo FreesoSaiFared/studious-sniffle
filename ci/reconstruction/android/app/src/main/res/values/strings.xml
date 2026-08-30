@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Nudge Runtime</string>
+    <string name="accessibility_description">User-enabled accessibility support for contextual behavioral nudges. The service may observe interface state and, in future explicitly enabled workflows, perform gestures or capture screenshots. It does not enable touch-exploration or intercept hardware keys.</string>
+</resources>
