@@ -94,7 +94,7 @@ jobs:
           unzip -l "$BUILD/self-nudge-dex-v0.1-ci.apk" | tee "$BUILD/apk-contents.txt"
           grep -q 'classes.dex' "$BUILD/apk-contents.txt"
           grep -q "package: name='science.transductive.nudge'" "$BUILD/aapt-badging.txt"
-          grep -q "sdkVersion:'26'" "$BUILD/aapt-badging.txt"
+          grep -q "minSdkVersion:'26'" "$BUILD/aapt-badging.txt"
           grep -q "targetSdkVersion:'35'" "$BUILD/aapt-badging.txt"
           sha256sum "$BUILD/self-nudge-dex-v0.1-ci.apk" | tee "$BUILD/sha256.txt"
 
