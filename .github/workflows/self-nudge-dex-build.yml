@@ -311,3 +311,80 @@ jobs:
             ci/optional-context/OPTIONAL_CONTEXT.lock.json
             ci/optional-context/THIRD_PARTY_NOTICES.md
           if-no-files-found: error
+
+
+  tier3-script-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Android platform/build tools 35
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"; fi
+          test -x "$SDKMANAGER"
+          set +o pipefail
+          yes | "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+          rc=${PIPESTATUS[1]}
+          set -o pipefail
+          test "$rc" -eq 0
+
+      - name: Verify Tier-3 script boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n ci/on-device-build/build-self-nudge.sh
+          bash -n ci/on-device-build/install-self-nudge.sh
+          grep -q 'INSTALL_NOT_PERFORMED=1' ci/on-device-build/build-self-nudge.sh
+          ! grep -q 'adb install' ci/on-device-build/build-self-nudge.sh
+          grep -q -- '--confirm-install' ci/on-device-build/install-self-nudge.sh
+          grep -q 'previous-built.apk' ci/on-device-build/install-self-nudge.sh
+          grep -q 'r8-8.13.19.jar' ci/on-device-build/build-self-nudge.sh
+
+      - name: Execute exact Tier-3 build script on Linux oracle
+        shell: bash
+        env:
+          REPO: ${{ github.workspace }}
+          ANDROID_JAR: ${{ env.ANDROID_SDK_ROOT }}/platforms/android-35/android.jar
+          R8JAR: ${{ github.workspace }}/ci/build/tier3-r8-8.13.19.jar
+          STATE_DIR: ${{ github.workspace }}/ci/build/tier3-state
+        run: |
+          set -euo pipefail
+          export PATH="${ANDROID_SDK_ROOT}/build-tools/35.0.0:$PATH"
+          bash ci/on-device-build/build-self-nudge.sh 2>&1 | tee ci/build/tier3-script-oracle.log
+          grep -q 'TIER3_ON_DEVICE_BUILD_PASS=1' ci/build/tier3-script-oracle.log
+          grep -q 'INSTALL_NOT_PERFORMED=1' ci/build/tier3-script-oracle.log
+          test -s ci/build/tier3-state/last-built.apk
+          test -s ci/build/tier3-state/last-build-receipt.json
+          python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path("ci/build/tier3-state/last-build-receipt.json")
+          d=json.loads(p.read_text())
+          assert d["status"]=="PASS"
+          assert d["install_performed"] is False
+          assert d["acceptance_boundary"]=="BUILT_ON_ANDROID_DEVICE_NOT_INSTALLED_NOT_RUNTIME_VERIFIED"
+          print("TIER3_SCRIPT_ORACLE_PASS=1")
+          PY
+
+      - name: Upload Tier-3 script oracle
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-nudge-tier3-script-oracle
+          path: |
+            ci/build/tier3-state/last-built.apk
+            ci/build/tier3-state/last-build-receipt.json
+            ci/build/tier3-script-oracle.log
+            ci/on-device-build/build-self-nudge.sh
+            ci/on-device-build/install-self-nudge.sh
+            ci/on-device-build/TIER3_BUILD.lock.json
+            ci/on-device-build/README.md
+          if-no-files-found: error
