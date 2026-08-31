@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$ApkPath,
-    [string]$ExpectedSha256 = "",
+    [Parameter(Mandatory=$true)][ValidatePattern("^[0-9A-Fa-f]{64}$")][string]$ExpectedSha256,
     [switch]$ConfirmInstall,
     [switch]$EnableAccessibilityViaAdb,
     [switch]$RunChatGptProbe,
@@ -25,9 +25,9 @@ if (Test-Path $defaultAdb) {
 }
 
 function Invoke-Adb {
-    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Args)
-    $out = & $Adb @Args 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "adb $($Args -join ' ') failed: $out" }
+    $adbArgs = @($args)
+    $out = & $Adb @adbArgs 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "adb $($adbArgs -join ' ') failed: $out" }
     return ($out -join "`n")
 }
 
@@ -122,7 +122,7 @@ try {
     $receipt.apk.path = $resolvedApk
     $receipt.apk.sha256 = $hash
     $receipt.apk.bytes = (Get-Item $resolvedApk).Length
-    if ($ExpectedSha256 -and $hash -ne $ExpectedSha256.ToLowerInvariant()) {
+    if ($hash -ne $ExpectedSha256.ToLowerInvariant()) {
         $receipt.status = "BLOCKED"
         $receipt.acceptance_boundary = "APK_HASH_MISMATCH"
         Write-Receipt $receipt
@@ -246,7 +246,7 @@ try {
             Tap-NodeText "Run ChatGPT automation probe" "unknown-button"
             Start-Sleep -Seconds 5
             Invoke-Adb -s $serial shell am force-stop com.openai.chatgpt | Out-Null
-            Start-Sleep -Seconds 8
+            Start-Sleep -Seconds $AutomationWaitSeconds
             Bring-SelfNudgeToFront
             $unknownText = All-UiText "unknown-result"
             $receipt.evidence.unknown_outcome_text = Save-Text "unknown-outcome-result.txt" ($unknownText + "`n")
