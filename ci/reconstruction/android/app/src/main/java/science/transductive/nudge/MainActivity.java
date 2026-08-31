@@ -47,6 +47,7 @@ public class MainActivity extends Activity {
         diagnosticResult=new TextView(this);diagnosticResult.setText("No accessibility diagnostics yet.");diagnosticResult.setTextSize(14);PremiumUi.body(diagnosticResult);add(diagnosticResult);
         add(button("Accessibility tree probe",v->runTreeProbe()));
         add(button("Accessibility screenshot probe",v->runScreenshotProbe()));
+        add(button("Signed behavior fixture probe",v->runSignedBehaviorFixture()));
         add(button("Microphone permission",v->{if(Build.VERSION.SDK_INT>=23)requestPermissions(new String[]{"android.permission.RECORD_AUDIO"},7);}));
 
         TextView autoHead=new TextView(this);autoHead.setText("CHATGPT APP AUTOMATION");autoHead.setTextSize(20);autoHead.setTypeface(Typeface.DEFAULT_BOLD);autoHead.setPadding(0,32,0,8);PremiumUi.heading(autoHead);add(autoHead);
@@ -85,6 +86,14 @@ public class MainActivity extends Activity {
             String r=AccessibilityDiagnostics.screenshotProbe();
             runOnUiThread(()->diagnosticResult.setText(r));
         },"accessibility-screenshot-probe").start();
+    }
+
+    private void runSignedBehaviorFixture(){
+        diagnosticResult.setText("Running signed behavior device fixture…");
+        new Thread(()->{
+            String r=DeviceSelfTest.signedBehaviorFixture(getApplicationContext());
+            runOnUiThread(()->diagnosticResult.setText(r));
+        },"signed-behavior-device-fixture").start();
     }
 
     private void openContextDocument(){
