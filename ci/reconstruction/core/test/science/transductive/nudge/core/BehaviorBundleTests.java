@@ -23,6 +23,11 @@ public final class BehaviorBundleTests {
         bad(()->BehaviorProgram.parse("{\"version\":\"BEHAVIOR_PROGRAM/1\",\"steps\":[{\"op\":\"SHELL\"}]}"),"unsupported op");
         bad(()->BehaviorProgram.parse("{\"version\":\"BEHAVIOR_PROGRAM/1\",\"steps\":[{\"op\":\"DELAY\",\"delayMs\":30001}]}"),"delay bound");
         ok(SignedBehaviorBundle.decodeP256PublicKey(kp.getPublic().getEncoded()).getAlgorithm().equals("EC"),"p256 decode");
+        bad(()->BehaviorProgram.parse("{\"version\":\"BEHAVIOR_PROGRAM/1\",\"steps\":[{\"op\":\"NUDGE\",\"text\":\"now\"},{\"op\":\"EMIT\",\"key\":\"x\"}]}"),"nudge must be final");
+        Map<String,Double> features=new LinkedHashMap<String,Double>();features.put("blink_rate",0.42);
+        Map<String,Double> hypotheses=new LinkedHashMap<String,Double>();hypotheses.put("tension_cue",0.35);
+        AffectObservation observation=new AffectObservation("mediapipe","face-landmarker-x","user-consented-camera",now,0.9,features,hypotheses);
+        ok(observation.json().contains("UNCERTAIN_OBSERVATION_NOT_GROUND_TRUTH"),"affect authority");
         System.out.println("BEHAVIOR_BUNDLE_TESTS_PASS="+pass);
     }
 }
