@@ -1,0 +1,40 @@
+{
+  "schema": "SELF_NUDGE_TIER1_ACCEPTANCE/1",
+  "status": "PASS",
+  "accepted_at": "2026-08-31T14:02:21Z",
+  "repository": "FreesoSaiFared/studious-sniffle",
+  "branch": "self-nudge-sqc-20260831",
+  "git_sha": "08c505d1a9a372b2f97724436e051dc6f4904c38",
+  "workflow_run_id": 33400251463,
+  "workflow_job_id": 99514545128,
+  "apk": {
+    "name": "self-nudge-dex-v0.1-ci.apk",
+    "bytes": 61946,
+    "sha256": "e6e84364e2678a08744b2b9dc5dfce8e732d4262d2a6fae3ffb3f58c1ac2474b",
+    "package": "science.transductive.nudge",
+    "min_sdk": 26,
+    "target_sdk": 35,
+    "classes_dex": true,
+    "signature": {
+      "v1": false,
+      "v2": true,
+      "v3": true,
+      "v31": false
+    }
+  },
+  "tests": {
+    "core": "17/17 PASS",
+    "transport": "3/3 PASS",
+    "automation": "8/8 PASS",
+    "behavior_bundle": "10/10 PASS",
+    "composition_lock": "15/15 PASS",
+    "tier1_static": "21/21 PASS"
+  },
+  "artifact": {
+    "id": 9760948744,
+    "archive_sha256": "d0aaae655303686516f68117529be7ab222181861e06c92eba961ce287dfbc8d",
+    "archive_bytes": 79034,
+    "expires_at": "2026-11-29T14:01:53Z"
+  },
+  "acceptance_boundary": "CI_BUILD_PASS_PHYSICAL_DEVICE_UNVERIFIED"
+}
