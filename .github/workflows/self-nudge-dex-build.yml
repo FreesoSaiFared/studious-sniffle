@@ -83,6 +83,62 @@ jobs:
           grep -q 'TIER2_STATIC_PASS=14' ci/build/tier2-static.log
           test -s ci/build/tier2-static-receipt.json
 
+      - name: Verify physical-device harness source boundaries
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $path = Join-Path $env:GITHUB_WORKSPACE "ci/device-acceptance/run-adb-acceptance.ps1"
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          $src = Get-Content -Raw $path
+          $required = @(
+            'E:\android\platform-tools\adb.exe',
+            'Get-Command adb',
+            'ExpectedSha256',
+            '-ConfirmInstall',
+            'EnableAccessibilityViaAdb',
+            'android.settings.ACCESSIBILITY_SETTINGS',
+            'settings put secure enabled_accessibility_services',
+            'science.transductive.nudge/.MainActivity',
+            'Accessibility tree probe',
+            'TREE_PROBE APPLIED',
+            'Accessibility screenshot probe',
+            'SCREENSHOT_PROBE APPLIED',
+            'Signed behavior fixture probe',
+            'SIGNED_BEHAVIOR_DEVICE_PROBE APPLIED',
+            'Import diary/context document…',
+            'sourceUri=content://',
+            'com.openai.chatgpt',
+            'UNKNOWN_OUTCOME',
+            'shell am force-stop $Package',
+            'logcat -d -v threadtime',
+            'SELF_NUDGE_ADB_DEVICE_ACCEPTANCE/1',
+            'DEVICE_ACCEPTANCE_PASS=1'
+          )
+          foreach ($needle in $required) {
+            if (-not $src.Contains($needle)) { throw "Missing device-harness invariant: $needle" }
+          }
+          if (-not $src.Contains('[Parameter(Mandatory=$true)][ValidatePattern("^[0-9A-Fa-f]{64}$")][string]$ExpectedSha256')) {
+            throw "ExpectedSha256 must be mandatory and a 64-hex digest"
+          }
+          $hashGate = $src.IndexOf('APK_HASH_MISMATCH')
+          $installGate = $src.IndexOf('if (-not $ConfirmInstall)')
+          $install = $src.IndexOf('install -r')
+          if ($hashGate -lt 0 -or $installGate -lt 0 -or $install -lt 0 -or $hashGate -gt $install -or $installGate -gt $install) {
+            throw "Hash and confirmation gates must precede adb install"
+          }
+          $accessGate = $src.IndexOf('if (-not $EnableAccessibilityViaAdb)')
+          $secureWrite = $src.IndexOf('settings put secure enabled_accessibility_services')
+          if ($accessGate -lt 0 -or $secureWrite -lt 0 -or $accessGate -gt $secureWrite) {
+            throw "Accessibility secure-setting write must be behind explicit ADB gate"
+          }
+          "PHYSICAL_HARNESS_STATIC_PASS=26" | Tee-Object -FilePath "ci/build/device-harness-static.log"
+
       - name: Compile resources and link manifest
         shell: bash
         run: |
@@ -161,6 +217,7 @@ jobs:
             "signed_module_tests":"7/7 PASS",
             "tier1_static_checks":"21/21 PASS",
             "tier2_static_checks":"14/14 PASS",
+            "physical_harness_static_checks":"26/26 PASS",
             "signature":{
               "v1":"Verified using v1 scheme (JAR signing): true" in sig,
               "v2":"Verified using v2 scheme (APK Signature Scheme v2): true" in sig,
@@ -198,6 +255,7 @@ jobs:
             ci/build/tier1-static-receipt.json
             ci/build/tier2-static.log
             ci/build/tier2-static-receipt.json
+            ci/build/device-harness-static.log
             ci/composition/COMPOSITION.lock.json
             ci/composition/DONOR_COMPOSITION.md
             ci/composition/NEGATIVE_DONORS.md
@@ -206,6 +264,8 @@ jobs:
             ci/composition/tier2_static_acceptance.py
             ci/composition/TIER1_ACCEPTANCE.json
             ci/optional-context/OPTIONAL_CONTEXT_ACCEPTANCE.json
+            ci/device-acceptance/run-adb-acceptance.ps1
+            ci/device-acceptance/README.md
             ci/SOURCE_BUILD_PROVENANCE.md
           if-no-files-found: error
 
