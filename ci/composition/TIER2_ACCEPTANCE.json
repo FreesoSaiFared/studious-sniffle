@@ -1,0 +1,41 @@
+{
+  "schema": "SELF_NUDGE_TIER2_ACCEPTANCE/1",
+  "status": "PASS",
+  "accepted_at": "2026-08-31T14:22:18Z",
+  "git_sha": "327acef93d5e0d40cf7b492f6234fb4d1edb6c34",
+  "workflow_run_id": 33402172556,
+  "workflow_job_id": 99520894576,
+  "apk": {
+    "bytes": 66042,
+    "sha256": "bd265ea3211b860067bd59ce1700a3a6718927c257a4d90f5ce32ccb5f619dd7",
+    "package": "science.transductive.nudge",
+    "min_sdk": 26,
+    "target_sdk": 35,
+    "signature": {
+      "v1": false,
+      "v2": true,
+      "v3": true,
+      "v31": false
+    }
+  },
+  "tests": {
+    "core": "17/17 PASS",
+    "transport": "3/3 PASS",
+    "automation": "8/8 PASS",
+    "behavior_bundle": "10/10 PASS",
+    "signed_behavior_acceptance": "7/7 PASS",
+    "context_document": "5/5 PASS",
+    "signed_module": "7/7 PASS",
+    "composition_lock": "15/15 PASS",
+    "tier1_static": "21/21 PASS",
+    "tier2_static": "14/14 PASS"
+  },
+  "artifact": {
+    "id": 9761674413,
+    "archive_sha256": "cd92fcc304f06e4fe90a15550ea5cc9cece3362b089bb486c8b4a975fe65978b",
+    "archive_bytes": 89082,
+    "expires_at": "2026-11-29T14:21:44Z"
+  },
+  "authority_boundary": "TRUSTED_SIGNED_CODE_HAS_APP_PROCESS_PERMISSIONS_NOT_A_SANDBOX",
+  "acceptance_boundary": "CI_BUILD_PASS_TIER2_SOURCE_AND_LOADER_ACCEPTED_PHYSICAL_DEVICE_UNVERIFIED"
+}
