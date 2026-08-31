@@ -32,7 +32,7 @@ function Invoke-Adb {
 }
 
 function Write-Receipt {
-    param([hashtable]$Receipt)
+    param([System.Collections.IDictionary]$Receipt)
     $path = Join-Path $EvidenceDir "device-acceptance-receipt.json"
     $Receipt | ConvertTo-Json -Depth 12 | Set-Content -Encoding UTF8 $path
     Write-Host "RECEIPT=$path"
@@ -69,13 +69,46 @@ function Find-NodeByText {
     return $null
 }
 
+function Get-ScreenSize {
+    $raw = Invoke-Adb shell wm size
+    $matchesFound = [regex]::Matches($raw, '(\d+)x(\d+)')
+    if ($matchesFound.Count -gt 0) {
+        $m = $matchesFound[$matchesFound.Count - 1]
+        return @([int]$m.Groups[1].Value,[int]$m.Groups[2].Value)
+    }
+    return @(1080,2400)
+}
+
+function Reset-AppScrollToTop {
+    $size = Get-ScreenSize
+    $x = [int]($size[0] / 2)
+    $fromY = [int]($size[1] * 0.25)
+    $toY = [int]($size[1] * 0.82)
+    for ($i=0; $i -lt 7; $i++) {
+        Invoke-Adb shell input swipe $x $fromY $x $toY 180 | Out-Null
+        Start-Sleep -Milliseconds 80
+    }
+}
+
 function Tap-NodeText {
     param([string]$Text,[string]$DumpName)
-    $xml = Dump-Ui $DumpName
-    $node = Find-NodeByText $xml $Text
-    if (-not $node) { throw "UI node not found: $Text" }
-    $xy = Get-BoundsCenter $node.bounds
-    Invoke-Adb shell input tap $xy[0] $xy[1] | Out-Null
+    Reset-AppScrollToTop
+    $size = Get-ScreenSize
+    $x = [int]($size[0] / 2)
+    $fromY = [int]($size[1] * 0.82)
+    $toY = [int]($size[1] * 0.25)
+    for ($attempt=0; $attempt -lt 12; $attempt++) {
+        $xml = Dump-Ui "$DumpName-$attempt"
+        $node = Find-NodeByText $xml $Text
+        if ($node) {
+            $xy = Get-BoundsCenter $node.bounds
+            Invoke-Adb shell input tap $xy[0] $xy[1] | Out-Null
+            return
+        }
+        Invoke-Adb shell input swipe $x $fromY $x $toY 220 | Out-Null
+        Start-Sleep -Milliseconds 180
+    }
+    throw "UI node not found after bounded scroll search: $Text"
 }
 
 function All-UiText {
@@ -262,11 +295,16 @@ try {
     $beforeRestart = All-UiText "restart-before"
     Invoke-Adb -s $serial shell am force-stop $Package | Out-Null
     Invoke-Adb -s $serial shell am start -W -n $Activity | Out-Null
-    Start-Sleep -Seconds 3
-    $afterRestart = All-UiText "restart-after"
-    if ($afterRestart -match 'Running package-fenced automation') {
-        throw "Automation appears to have automatically replayed after restart."
+    Start-Sleep -Seconds 5
+    $activities = Invoke-Adb -s $serial shell dumpsys activity activities
+    $receipt.evidence.restart_activities = Save-Text "restart-activities.txt" ($activities + "`n")
+    if ($activities -match 'mResumedActivity.*com\.openai\.chatgpt') {
+        throw "ChatGPT was relaunched after Self-Nudge restart; prior automation may have replayed."
     }
+    if ($activities -notmatch 'mResumedActivity.*science\.transductive\.nudge') {
+        throw "Self-Nudge was not the resumed activity after restart; no-replay state is not proven."
+    }
+    $afterRestart = All-UiText "restart-after"
     $receipt.gates.restart_no_autoreplay = "PASS"
     $receipt.evidence.restart_before = Save-Text "restart-before.txt" ($beforeRestart + "`n")
     $receipt.evidence.restart_after = Save-Text "restart-after.txt" ($afterRestart + "`n")
@@ -286,7 +324,7 @@ try {
     if ($receipt.status -eq "STARTED") {
         $receipt.status = "FAIL"
         $receipt.acceptance_boundary = "DEVICE_ACCEPTANCE_FAILED"
-        $receipt.error = $_.Exception.Message
+        $receipt["error"] = $_.Exception.Message
         try {
             $logcat = Invoke-Adb logcat -d -v threadtime
             $receipt.evidence.logcat = Save-Text "device-logcat.txt" ($logcat + "`n")
