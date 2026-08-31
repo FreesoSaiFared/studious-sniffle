@@ -49,10 +49,14 @@ jobs:
           java --add-modules jdk.httpserver -cp "$OUT" science.transductive.nudge.core.TransportTests | tee "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
           java -cp "$OUT" science.transductive.nudge.core.AutomationTests | tee "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
           java -cp "$OUT" science.transductive.nudge.core.BehaviorBundleTests | tee "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
+          java -cp "$OUT" science.transductive.nudge.core.SignedBehaviorAcceptance | tee "$GITHUB_WORKSPACE/ci/build/signed-behavior-acceptance.log"
+          java -cp "$OUT" science.transductive.nudge.core.ContextDocumentTests | tee "$GITHUB_WORKSPACE/ci/build/context-document-tests.log"
           grep -q 'CORE_TESTS_PASS=17' "$GITHUB_WORKSPACE/ci/build/core-tests.log"
           grep -q 'TRANSPORT_TESTS_PASS=3' "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
           grep -q 'AUTOMATION_TESTS_PASS=8' "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
           grep -q 'BEHAVIOR_BUNDLE_TESTS_PASS=10' "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
+          grep -q 'SIGNED_BEHAVIOR_ACCEPTANCE_PASS=7' "$GITHUB_WORKSPACE/ci/build/signed-behavior-acceptance.log"
+          grep -q 'CONTEXT_DOCUMENT_TESTS_PASS=5' "$GITHUB_WORKSPACE/ci/build/context-document-tests.log"
 
       - name: Verify exact Source Quarry donor slices
         shell: bash
@@ -142,6 +146,8 @@ jobs:
             "transport_tests":"3/3 PASS",
             "automation_tests":"8/8 PASS",
             "behavior_bundle_tests":"10/10 PASS",
+            "signed_behavior_acceptance":"7/7 PASS",
+            "context_document_tests":"5/5 PASS",
             "tier1_static_checks":"21/21 PASS",
             "signature":{
               "v1":"Verified using v1 scheme (JAR signing): true" in sig,
@@ -172,6 +178,8 @@ jobs:
             ci/build/transport-tests.log
             ci/build/automation-tests.log
             ci/build/behavior-bundle-tests.log
+            ci/build/signed-behavior-acceptance.log
+            ci/build/context-document-tests.log
             ci/build/composition-lock.log
             ci/build/tier1-static.log
             ci/build/tier1-static-receipt.json
