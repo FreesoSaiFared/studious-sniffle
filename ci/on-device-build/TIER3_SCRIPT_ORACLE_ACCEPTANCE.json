@@ -1,0 +1,29 @@
+{
+  "schema": "SELF_NUDGE_TIER3_SCRIPT_ORACLE_ACCEPTANCE/1",
+  "status": "PASS",
+  "accepted_at": "2026-08-31T14:22:09Z",
+  "git_sha": "327acef93d5e0d40cf7b492f6234fb4d1edb6c34",
+  "workflow_run_id": 33402172556,
+  "workflow_job_id": 99520894946,
+  "apk": {
+    "bytes": 66042,
+    "sha256": "476e0d2217b11fc9f2e6e131b2df556f386739d91c3fb0ed79e422f79f6ab056",
+    "signature": {
+      "v1": false,
+      "v2": true,
+      "v3": true,
+      "v31": false
+    },
+    "signer_dn": "CN=Self-Nudge On-Device, O=Transductive, C=NL"
+  },
+  "script": "ci/on-device-build/build-self-nudge.sh",
+  "install_script": "ci/on-device-build/install-self-nudge.sh",
+  "install_performed": false,
+  "artifact": {
+    "id": 9761669122,
+    "archive_sha256": "12bc5a793df3c26355e4d8e02f24ca9beb735b7965bb985dc117277dd33dffac",
+    "archive_bytes": 66246,
+    "expires_at": "2026-11-29T14:21:44Z"
+  },
+  "acceptance_boundary": "EXACT_TERMUX_SCRIPT_LINUX_ORACLE_PASS_ANDROID_DEVICE_EXECUTION_UNVERIFIED"
+}
