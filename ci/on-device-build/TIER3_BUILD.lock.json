@@ -1,0 +1,32 @@
+{
+  "schema": "SELF_NUDGE_TIER3_BUILD_LOCK/1",
+  "generated_at": "2026-08-31",
+  "donor": {
+    "repo": "rune-lynx/brb-build",
+    "ref": "3a49b374b339d19202e3af024c6a5145487e94f9",
+    "path": "build.sh",
+    "blob_sha": "b41eb9c6ed1d7e637b659f71cf34f2436b0c50e1",
+    "lines": [
+      1,
+      115
+    ],
+    "license": "Apache-2.0"
+  },
+  "stages": [
+    "aapt2 compile",
+    "aapt2 link + R.java",
+    "javac",
+    "modern R8 D8",
+    "zip classes.dex",
+    "zipalign",
+    "apksigner"
+  ],
+  "invariant": "Build success never installs. Installation/rollback is a separate explicit command.",
+  "modern_r8_required": "8.13.19 default because Self-Nudge uses lambdas/enums and must not rely on legacy Termux D8 flat-Java constraints.",
+  "outputs": [
+    "last-built.apk",
+    "previous-built.apk",
+    "last-build-receipt.json"
+  ],
+  "acceptance_boundary": "SCRIPT_COMPOSED_CI_ORACLE_AVAILABLE_ANDROID_DEVICE_EXECUTION_UNVERIFIED"
+}
