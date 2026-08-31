@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - self-nudge-dex-build-20260830
+      - self-nudge-sqc-20260831
   workflow_dispatch:
 
 permissions:
@@ -46,8 +47,17 @@ jobs:
           javac --add-modules jdk.httpserver -d "$OUT"             "$ROOT"/core/src/science/transductive/nudge/core/*.java             "$ROOT"/android/app/src/main/java/science/transductive/nudge/WorkerClient.java             "$ROOT"/core/test/science/transductive/nudge/core/*.java
           java -cp "$OUT" science.transductive.nudge.core.CoreTests | tee "$GITHUB_WORKSPACE/ci/build/core-tests.log"
           java --add-modules jdk.httpserver -cp "$OUT" science.transductive.nudge.core.TransportTests | tee "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
+          java -cp "$OUT" science.transductive.nudge.core.AutomationTests | tee "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
           grep -q 'CORE_TESTS_PASS=17' "$GITHUB_WORKSPACE/ci/build/core-tests.log"
           grep -q 'TRANSPORT_TESTS_PASS=3' "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
+          grep -q 'AUTOMATION_TESTS_PASS=8' "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
+
+      - name: Verify exact Source Quarry donor slices
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ci/composition/verify_composition_lock.py 2>&1 | tee ci/build/composition-lock.log
+          grep -q 'COMPOSITION_LOCK_PASS=15' ci/build/composition-lock.log
 
       - name: Compile resources and link manifest
         shell: bash
@@ -120,6 +130,7 @@ jobs:
             "classes_dex":True,
             "core_tests":"17/17 PASS",
             "transport_tests":"3/3 PASS",
+            "automation_tests":"8/8 PASS",
             "signature":{
               "v1":"Verified using v1 scheme (JAR signing): true" in sig,
               "v2":"Verified using v2 scheme (APK Signature Scheme v2): true" in sig,
@@ -147,5 +158,11 @@ jobs:
             ci/build/android/d8.log
             ci/build/core-tests.log
             ci/build/transport-tests.log
+            ci/build/automation-tests.log
+            ci/build/composition-lock.log
+            ci/composition/COMPOSITION.lock.json
+            ci/composition/DONOR_COMPOSITION.md
+            ci/composition/NEGATIVE_DONORS.md
+            ci/composition/CLOSURE_RESIDUAL.md
             ci/SOURCE_BUILD_PROVENANCE.md
           if-no-files-found: error
