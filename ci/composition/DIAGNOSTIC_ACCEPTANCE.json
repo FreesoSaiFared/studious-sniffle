@@ -1,0 +1,113 @@
+{
+  "schema": "SELF_NUDGE_DIAGNOSTIC_ACCEPTANCE/1",
+  "status": "PASS",
+  "accepted_at": "2026-08-31T16:23:52Z",
+  "repository": "FreesoSaiFared/studious-sniffle",
+  "branch": "self-nudge-sqc-20260831",
+  "git_sha": "e752d15c8c796564e17f93d01b66c81adb99e9ed",
+  "workflow_run_id": 33413718590,
+  "jobs": {
+    "core": {
+      "id": 99559258993,
+      "conclusion": "success"
+    },
+    "optional_context": {
+      "id": 99559258943,
+      "conclusion": "success"
+    },
+    "tier3_script_oracle": {
+      "id": 99559258704,
+      "conclusion": "success"
+    }
+  },
+  "apk": {
+    "name": "self-nudge-dex-v0.1-ci.apk",
+    "bytes": 66042,
+    "sha256": "bfdc67492b960be0f5860b2ce9228f7112337f20437ce3c0442c0e4e4809b85e",
+    "package": "science.transductive.nudge",
+    "min_sdk": 26,
+    "target_sdk": 35,
+    "signature": {
+      "v1": false,
+      "v2": true,
+      "v3": true,
+      "v31": false
+    }
+  },
+  "tests": {
+    "core": "17/17 PASS",
+    "transport": "3/3 PASS",
+    "automation": "8/8 PASS",
+    "behavior_bundle": "10/10 PASS",
+    "signed_behavior_acceptance": "7/7 PASS",
+    "context_document": "5/5 PASS",
+    "signed_module": "7/7 PASS",
+    "composition_lock": "15/15 PASS",
+    "tier1_static": "21/21 PASS",
+    "tier2_static": "14/14 PASS",
+    "physical_harness_static": "26/26 PASS"
+  },
+  "diagnostics": {
+    "accessibility_tree_probe": "SOURCE_COMPILED_CI_RUNTIME_DEVICE_UNVERIFIED",
+    "accessibility_screenshot_probe": "SOURCE_COMPILED_CI_RUNTIME_DEVICE_UNVERIFIED",
+    "signed_behavior_device_fixture": "SOURCE_COMPILED_CI_RUNTIME_DEVICE_UNVERIFIED",
+    "context_source_uri_provenance": "SOURCE_COMPILED_CI_RUNTIME_DEVICE_UNVERIFIED",
+    "adb_harness": "POWERSHELL_PARSE_AND_26_STATIC_INVARIANTS_PASS"
+  },
+  "optional_context": {
+    "status": "PASS",
+    "core_apk_dependency": "NONE",
+    "face_model": {
+      "bytes": 3758596,
+      "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff"
+    },
+    "sensing_aar": {
+      "bytes": 3339903,
+      "sha256": "adbf9b0edafbf95fbb92e6259408270da374563624eed0281ecb160793dbf8e0"
+    },
+    "health_aar": {
+      "bytes": 13705,
+      "sha256": "911593ec654f2f33877531fa2c07a85c18b39b2eed5caf203f6dcfe823a0b56a"
+    }
+  },
+  "tier3_script_oracle": {
+    "status": "PASS",
+    "apk_bytes": 66042,
+    "apk_sha256": "0c75b696ae85601dc7c9ee3ac6becf996363473b7163598b9264e05f4e84fa60",
+    "signature": {
+      "v2": true,
+      "v3": true
+    },
+    "install_performed": false
+  },
+  "artifacts": {
+    "core": {
+      "id": 9766165333,
+      "archive_sha256": "8973edba3e9014b13cfca0a2871b1d873ce5bbff81163a24a8f168cd4ddefdbc",
+      "archive_bytes": 97666
+    },
+    "optional_context": {
+      "id": 9766198082,
+      "archive_sha256": "76ff2964cf31b959bf7915af043625a0f31578795ec8f30de09898e466735273",
+      "archive_bytes": 3357959
+    },
+    "tier3_script_oracle": {
+      "id": 9766153689,
+      "archive_sha256": "b7dd3ca93fdb3d51b017cbc7474f359548649610696d9343e737f5d18b346a24",
+      "archive_bytes": 68521
+    }
+  },
+  "physical_device": {
+    "status": "BLOCKED_NOT_EXECUTED",
+    "reason": "Direct Desktop Commander is not exposed in the active connector registry, so E:\\android\\platform-tools\\adb.exe and adb devices -l cannot be mechanically inspected in this session.",
+    "adb_device_count": "UNVERIFIED",
+    "install_performed": false,
+    "runtime_claim": false,
+    "required_receipt": "SELF_NUDGE_ADB_DEVICE_ACCEPTANCE/1"
+  },
+  "historical_receipts_untouched": [
+    "ci/composition/TIER1_ACCEPTANCE.json",
+    "ci/composition/TIER2_ACCEPTANCE.json"
+  ],
+  "acceptance_boundary": "ALL_THREE_CI_JOBS_PASS_DIAGNOSTIC_APK_ACCEPTED_PHYSICAL_DEVICE_BLOCKED"
+}
