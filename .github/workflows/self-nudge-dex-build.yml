@@ -190,3 +190,106 @@ jobs:
             ci/composition/tier1_static_acceptance.py
             ci/SOURCE_BUILD_PROVENANCE.md
           if-no-files-found: error
+
+
+  optional-context:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Install Android platform 35
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"; fi
+          test -x "$SDKMANAGER"
+          set +o pipefail
+          yes | "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+          rc=${PIPESTATUS[1]}
+          set -o pipefail
+          test "$rc" -eq 0
+
+      - name: Verify optional context source boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s ci/optional-context/OPTIONAL_CONTEXT.lock.json
+          test -s ci/optional-context/THIRD_PARTY_NOTICES.md
+          ! grep -R 'android.permission.health.WRITE_' ci/optional-context/health/src/main
+          grep -q 'getGrantedPermissions' ci/optional-context/health/src/main/java/science/transductive/nudge/health/HealthContextAdapter.kt
+          grep -q 'SecurityException' ci/optional-context/health/src/main/java/science/transductive/nudge/health/HealthContextAdapter.kt
+          grep -q 'MAX_SAMPLES=4096' ci/optional-context/sensing/src/main/java/science/transductive/nudge/sensing/ProsodyFeatureExtractor.java
+          grep -q 'setOutputFaceBlendshapes(true)' ci/optional-context/sensing/src/main/java/science/transductive/nudge/sensing/FaceBlendshapeSensor.java
+          grep -q '"authority": "RAW_SIGNAL_OBSERVATIONS_ONLY"' ci/optional-context/OPTIONAL_CONTEXT.lock.json
+
+      - name: Compile and test optional sensing and health modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p ci/optional-context --no-daemon --stacktrace \
+            :sensing:testDebugUnitTest :health:testDebugUnitTest \
+            :sensing:assembleDebug :health:assembleDebug | tee ci/optional-context/optional-context-gradle.log
+          test -s ci/optional-context/sensing/build/outputs/aar/sensing-debug.aar
+          test -s ci/optional-context/health/build/outputs/aar/health-debug.aar
+          test -s ci/optional-context/sensing/src/main/assets/face_landmarker.task
+          unzip -l ci/optional-context/sensing/build/outputs/aar/sensing-debug.aar | tee ci/optional-context/sensing-aar.txt
+          grep -q 'assets/face_landmarker.task' ci/optional-context/sensing-aar.txt
+
+      - name: Write optional context receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root=pathlib.Path("ci/optional-context")
+          files={
+            "face_model":root/"sensing/src/main/assets/face_landmarker.task",
+            "sensing_aar":root/"sensing/build/outputs/aar/sensing-debug.aar",
+            "health_aar":root/"health/build/outputs/aar/health-debug.aar",
+          }
+          def info(path):
+              b=path.read_bytes()
+              return {"path":str(path),"bytes":len(b),"sha256":hashlib.sha256(b).hexdigest()}
+          data={
+            "schema":"SELF_NUDGE_OPTIONAL_CONTEXT_RECEIPT/1",
+            "status":"PASS",
+            "git_sha":os.environ["GITHUB_SHA"],
+            "toolchain":{"gradle":"8.10.2","agp":"8.7.3","kotlin":"1.9.25","compile_sdk":35},
+            "mediapipe":"com.google.mediapipe:tasks-vision:1.0.0",
+            "health_connect":"androidx.health.connect:connect-client:1.1.0-alpha12",
+            "prosody":{"donor":"thestbar/tunify@836876a1b30581ad99495bfde74b4060df06f17d","features":["rms","zero_crossing_rate","pitch_hz","periodicity"],"authority":"RAW_SIGNAL_OBSERVATIONS_ONLY"},
+            "health":{"record_types":["STEPS","HEART_RATE","SLEEP"],"access":"READ_ONLY_EXPLICIT_PER_RECORD_PERMISSION"},
+            "artifacts":{k:info(v) for k,v in files.items()},
+            "core_apk_dependency":"NONE"
+          }
+          out=root/"optional-context-receipt.json"
+          out.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n")
+          print(json.dumps(data,sort_keys=True))
+          PY
+
+      - name: Upload optional context evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-nudge-optional-context
+          path: |
+            ci/optional-context/optional-context-receipt.json
+            ci/optional-context/optional-context-gradle.log
+            ci/optional-context/sensing-aar.txt
+            ci/optional-context/sensing/build/outputs/aar/sensing-debug.aar
+            ci/optional-context/health/build/outputs/aar/health-debug.aar
+            ci/optional-context/OPTIONAL_CONTEXT.lock.json
+            ci/optional-context/THIRD_PARTY_NOTICES.md
+          if-no-files-found: error
