@@ -1,0 +1,31 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'science.transductive.nudge.sensing'
+    compileSdk 35
+    defaultConfig { minSdk 26 }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+def faceModel = file("src/main/assets/face_landmarker.task")
+tasks.register("downloadFaceLandmarker") {
+    outputs.file(faceModel)
+    doLast {
+        faceModel.parentFile.mkdirs()
+        if (!faceModel.exists()) {
+            new URL("https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task")
+                .withInputStream { input -> faceModel.withOutputStream { output -> output << input } }
+        }
+    }
+}
+preBuild.dependsOn(tasks.named("downloadFaceLandmarker"))
+
+dependencies {
+    implementation 'com.google.mediapipe:tasks-vision:1.0.0'
+    testImplementation 'junit:junit:4.13.2'
+}
