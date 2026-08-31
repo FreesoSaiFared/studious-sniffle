@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
             Uri u=data.getData();try{
                 getContentResolver().takePersistableUriPermission(u,Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 ContextDocumentStore.Imported d=ContextDocumentStore.importUri(this,u);
-                contextResult.setText("Imported "+d.name+"\n"+d.bytes+" bytes\nSHA-256 "+d.sha256+"\n"+d.mimeType);
+                contextResult.setText("Imported "+d.name+"\n"+d.bytes+" bytes\nSHA-256 "+d.sha256+"\n"+d.mimeType+"\nsourceUri="+d.sourceUri);
             }catch(Exception e){contextResult.setText("Import failed: "+e.getMessage());}
         }
     }
