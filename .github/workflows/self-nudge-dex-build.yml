@@ -354,11 +354,12 @@ jobs:
         shell: bash
         env:
           REPO: ${{ github.workspace }}
-          ANDROID_JAR: ${{ env.ANDROID_SDK_ROOT }}/platforms/android-35/android.jar
           R8JAR: ${{ github.workspace }}/ci/build/tier3-r8-8.13.19.jar
           STATE_DIR: ${{ github.workspace }}/ci/build/tier3-state
         run: |
           set -euo pipefail
+          mkdir -p ci/build
+          export ANDROID_JAR="${ANDROID_SDK_ROOT}/platforms/android-35/android.jar"
           export PATH="${ANDROID_SDK_ROOT}/build-tools/35.0.0:$PATH"
           bash ci/on-device-build/build-self-nudge.sh 2>&1 | tee ci/build/tier3-script-oracle.log
           grep -q 'TIER3_ON_DEVICE_BUILD_PASS=1' ci/build/tier3-script-oracle.log
