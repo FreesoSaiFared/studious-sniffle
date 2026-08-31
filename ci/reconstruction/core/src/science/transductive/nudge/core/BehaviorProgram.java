@@ -33,6 +33,7 @@ public final class BehaviorProgram {
             delayBudget+=delay;if(delayBudget>60000)throw new IllegalArgumentException("delay budget");
             out.add(new Step(op,text,pkg,key,delay));
         }
+        for(int i=0;i<out.size()-1;i++)if(out.get(i).op==Op.NUDGE)throw new IllegalArgumentException("NUDGE must be final step");
         return new BehaviorProgram(out);
     }
     private static String str(Map<String,Object>m,String k,String d){Object v=m.get(k);return v==null?d:String.valueOf(v);}
