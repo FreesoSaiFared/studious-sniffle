@@ -51,12 +51,14 @@ jobs:
           java -cp "$OUT" science.transductive.nudge.core.BehaviorBundleTests | tee "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
           java -cp "$OUT" science.transductive.nudge.core.SignedBehaviorAcceptance | tee "$GITHUB_WORKSPACE/ci/build/signed-behavior-acceptance.log"
           java -cp "$OUT" science.transductive.nudge.core.ContextDocumentTests | tee "$GITHUB_WORKSPACE/ci/build/context-document-tests.log"
+          java -cp "$OUT" science.transductive.nudge.core.SignedModuleManifestTests | tee "$GITHUB_WORKSPACE/ci/build/signed-module-tests.log"
           grep -q 'CORE_TESTS_PASS=17' "$GITHUB_WORKSPACE/ci/build/core-tests.log"
           grep -q 'TRANSPORT_TESTS_PASS=3' "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
           grep -q 'AUTOMATION_TESTS_PASS=8' "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
           grep -q 'BEHAVIOR_BUNDLE_TESTS_PASS=10' "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
           grep -q 'SIGNED_BEHAVIOR_ACCEPTANCE_PASS=7' "$GITHUB_WORKSPACE/ci/build/signed-behavior-acceptance.log"
           grep -q 'CONTEXT_DOCUMENT_TESTS_PASS=5' "$GITHUB_WORKSPACE/ci/build/context-document-tests.log"
+          grep -q 'SIGNED_MODULE_TESTS_PASS=7' "$GITHUB_WORKSPACE/ci/build/signed-module-tests.log"
 
       - name: Verify exact Source Quarry donor slices
         shell: bash
@@ -72,6 +74,14 @@ jobs:
           python3 ci/composition/tier1_static_acceptance.py 2>&1 | tee ci/build/tier1-static.log
           grep -q 'TIER1_STATIC_PASS=21' ci/build/tier1-static.log
           test -s ci/build/tier1-static-receipt.json
+
+      - name: Verify Tier-2 signed module boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ci/composition/tier2_static_acceptance.py 2>&1 | tee ci/build/tier2-static.log
+          grep -q 'TIER2_STATIC_PASS=14' ci/build/tier2-static.log
+          test -s ci/build/tier2-static-receipt.json
 
       - name: Compile resources and link manifest
         shell: bash
@@ -148,7 +158,9 @@ jobs:
             "behavior_bundle_tests":"10/10 PASS",
             "signed_behavior_acceptance":"7/7 PASS",
             "context_document_tests":"5/5 PASS",
+            "signed_module_tests":"7/7 PASS",
             "tier1_static_checks":"21/21 PASS",
+            "tier2_static_checks":"14/14 PASS",
             "signature":{
               "v1":"Verified using v1 scheme (JAR signing): true" in sig,
               "v2":"Verified using v2 scheme (APK Signature Scheme v2): true" in sig,
@@ -180,14 +192,20 @@ jobs:
             ci/build/behavior-bundle-tests.log
             ci/build/signed-behavior-acceptance.log
             ci/build/context-document-tests.log
+            ci/build/signed-module-tests.log
             ci/build/composition-lock.log
             ci/build/tier1-static.log
             ci/build/tier1-static-receipt.json
+            ci/build/tier2-static.log
+            ci/build/tier2-static-receipt.json
             ci/composition/COMPOSITION.lock.json
             ci/composition/DONOR_COMPOSITION.md
             ci/composition/NEGATIVE_DONORS.md
             ci/composition/CLOSURE_RESIDUAL.md
             ci/composition/tier1_static_acceptance.py
+            ci/composition/tier2_static_acceptance.py
+            ci/composition/TIER1_ACCEPTANCE.json
+            ci/optional-context/OPTIONAL_CONTEXT_ACCEPTANCE.json
             ci/SOURCE_BUILD_PROVENANCE.md
           if-no-files-found: error
 
