@@ -1,0 +1,133 @@
+{
+  "schema": "SELF_NUDGE_OPTIONAL_CONTEXT_LOCK/1",
+  "generated_at": "2026-08-31",
+  "invariant": "The dependency-free core APK build remains an independent required CI job. Optional sensing/health failures must not mutate or replace its source/build path.",
+  "toolchain": {
+    "gradle": "8.10.2",
+    "android_gradle_plugin": "8.7.3",
+    "kotlin": "1.9.25",
+    "compile_sdk": 35,
+    "min_sdk": 26
+  },
+  "modules": {
+    "sensing": {
+      "dependencies": [
+        "com.google.mediapipe:tasks-vision:1.0.0"
+      ],
+      "model": {
+        "url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        "asset": "face_landmarker.task"
+      },
+      "outputs": [
+        "face_count",
+        "blendshape_scores",
+        "inference_ms",
+        "rms",
+        "zero_crossing_rate",
+        "pitch_hz",
+        "periodicity"
+      ],
+      "authority": "RAW_SIGNAL_OBSERVATIONS_ONLY"
+    },
+    "health": {
+      "dependencies": [
+        "androidx.health.connect:connect-client:1.1.0-alpha12",
+        "androidx.core:core:1.13.1"
+      ],
+      "record_types": [
+        "STEPS",
+        "HEART_RATE",
+        "SLEEP"
+      ],
+      "access": "READ_ONLY_EXPLICIT_PER_RECORD_PERMISSION"
+    }
+  },
+  "donors": [
+    {
+      "id": "mediapipe-face-options",
+      "repo": "google-ai-edge/mediapipe-samples",
+      "ref": "ece8a1f99726a364509be9d07835a69ef65d3e35",
+      "path": "examples/face_landmarker/android/app/src/main/java/com/google/mediapipe/examples/facelandmarker/FaceLandmarkerHelper.kt",
+      "blob_sha": "b6a76fc179ba66be77434900aaf67e305b5b3b1f",
+      "ranges": [
+        [
+          70,
+          144
+        ],
+        [
+          296,
+          329
+        ]
+      ],
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "mediapipe-blendshapes",
+      "repo": "google-ai-edge/mediapipe-samples",
+      "ref": "ece8a1f99726a364509be9d07835a69ef65d3e35",
+      "path": "examples/face_landmarker/android/app/src/main/java/com/google/mediapipe/examples/facelandmarker/fragment/FaceBlendshapesResultAdapter.kt",
+      "blob_sha": "09fabd2713423b96bd8707a4914ff033c9056b54",
+      "ranges": [
+        [
+          34,
+          44
+        ]
+      ],
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "tunify-yin",
+      "repo": "thestbar/tunify",
+      "ref": "836876a1b30581ad99495bfde74b4060df06f17d",
+      "path": "app/src/main/java/dev/thestbar/tunify/util/algorithms/Yin.kt",
+      "blob_sha": "7fea0dc4b152bc2961caf76dabdf1d4104f8a95c",
+      "ranges": [
+        [
+          12,
+          28
+        ],
+        [
+          30,
+          39
+        ],
+        [
+          41,
+          50
+        ],
+        [
+          52,
+          65
+        ],
+        [
+          67,
+          80
+        ]
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "health-connect-permission-read",
+      "repo": "android/health-samples",
+      "ref": "8613828d6309c00bec8a7704cced9fc445bd018f",
+      "path": "health-connect/HealthConnectSample/app/src/main/java/com/example/healthconnectsample/data/HealthConnectManager.kt",
+      "blob_sha": "b4d30df8a734a38a31b137cf5eeb59a12d73236c",
+      "ranges": [
+        [
+          115,
+          122
+        ],
+        [
+          134,
+          141
+        ]
+      ],
+      "license": "Apache-2.0"
+    }
+  ],
+  "rejected": [
+    {
+      "repo": "JorenSix/TarsosDSP",
+      "reason": "GPL-family licensing makes it unsuitable for direct composition into this generally reusable deliverable; Tunify MIT YIN donor selected instead."
+    }
+  ]
+}
