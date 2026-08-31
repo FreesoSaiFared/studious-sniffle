@@ -1,0 +1,57 @@
+{
+  "schema": "SELF_NUDGE_OPTIONAL_CONTEXT_ACCEPTANCE/1",
+  "status": "PASS",
+  "accepted_at": "2026-08-31T14:14:36Z",
+  "git_sha": "ae777f249695760de1a2f6cdfce67c01ab4e4364",
+  "workflow_run_id": 33401334540,
+  "workflow_job_id": 99518083280,
+  "invariant": "core_apk_dependency=NONE",
+  "toolchain": {
+    "gradle": "8.10.2",
+    "agp": "8.7.3",
+    "kotlin": "1.9.25",
+    "compile_sdk": 35
+  },
+  "mediapipe": {
+    "dependency": "com.google.mediapipe:tasks-vision:1.0.0",
+    "model": {
+      "bytes": 3758596,
+      "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff"
+    }
+  },
+  "sensing_aar": {
+    "bytes": 3339903,
+    "sha256": "adbf9b0edafbf95fbb92e6259408270da374563624eed0281ecb160793dbf8e0"
+  },
+  "health": {
+    "dependency": "androidx.health.connect:connect-client:1.1.0-alpha12",
+    "access": "READ_ONLY_EXPLICIT_PER_RECORD_PERMISSION",
+    "record_types": [
+      "STEPS",
+      "HEART_RATE",
+      "SLEEP"
+    ]
+  },
+  "health_aar": {
+    "bytes": 13705,
+    "sha256": "911593ec654f2f33877531fa2c07a85c18b39b2eed5caf203f6dcfe823a0b56a"
+  },
+  "prosody": {
+    "donor": "thestbar/tunify@836876a1b30581ad99495bfde74b4060df06f17d",
+    "license": "MIT",
+    "features": [
+      "rms",
+      "zero_crossing_rate",
+      "pitch_hz",
+      "periodicity"
+    ],
+    "max_samples": 4096,
+    "authority": "RAW_SIGNAL_OBSERVATIONS_ONLY"
+  },
+  "artifact": {
+    "id": 9761388493,
+    "archive_sha256": "03718b91955d9ce7d1830e8d118456b4287d20ca27de600f2184ef1f6bd81bd1",
+    "archive_bytes": 3357963,
+    "expires_at": "2026-11-29T14:13:00Z"
+  }
+}
