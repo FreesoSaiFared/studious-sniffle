@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Package = "science.transductive.nudge"
-$Activity = "$Package/.MainActivity"
+$Activity = "science.transductive.nudge/.MainActivity"
 $Service = "$Package/$Package.NudgeAccessibilityService"
 $EvidenceDir = Join-Path $PSScriptRoot "evidence"
 New-Item -ItemType Directory -Force -Path $EvidenceDir | Out-Null
