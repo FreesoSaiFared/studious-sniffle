@@ -25,4 +25,7 @@ public final class TrustedBehaviorKeys {
         return out;
     }
     public static int count(Context c){return all(c).size();}
+    public static void remove(Context c,String keyId){
+        if(keyId!=null)c.getSharedPreferences(PREF,Context.MODE_PRIVATE).edit().remove(keyId).apply();
+    }
 }
