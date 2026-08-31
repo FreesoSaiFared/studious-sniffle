@@ -14,8 +14,8 @@ public final class ContextDocumentStore {
     public static final long MAX_BYTES=ContextDocumentContract.MAX_BYTES;
     private ContextDocumentStore(){}
     public static final class Imported {
-        public final String sha256,name,mimeType;public final long bytes;
-        Imported(String h,String n,String m,long b){sha256=h;name=n;mimeType=m;bytes=b;}
+        public final String sha256,name,mimeType,sourceUri;public final long bytes;
+        Imported(String h,String n,String m,String u,long b){sha256=h;name=n;mimeType=m;sourceUri=u;bytes=b;}
     }
 
     public static Imported importUri(Context c,Uri uri){
@@ -30,7 +30,7 @@ public final class ContextDocumentStore {
             File dir=new File(c.getFilesDir(),"context-documents");dir.mkdirs();
             File bin=new File(dir,hash+".bin");if(!bin.isFile())atomic(bin,data);
             atomic(new File(dir,hash+".json"),(MiniJson.stringify(meta)+"\n").getBytes(StandardCharsets.UTF_8));
-            return new Imported(hash,name,mime,data.length);
+            return new Imported(hash,name,mime,String.valueOf(meta.get("sourceUri")),data.length);
         }catch(IOException e){throw new IllegalStateException(e);}
     }
 
