@@ -1,0 +1,200 @@
+{
+  "schema": "SELF_NUDGE_COMPOSITION_LOCK/1",
+  "generated_at": "2026-08-31",
+  "target": {
+    "repository": "FreesoSaiFared/studious-sniffle",
+    "baseline_commit": "31fbc88bccfcf9142fda04f3d7735f0546b609df",
+    "composition_branch": "self-nudge-sqc-20260831",
+    "package": "science.transductive.nudge"
+  },
+  "slice_bytes": "UTF-8, source lines START..END inclusive joined with LF and one final LF",
+  "donors": [
+    {
+      "id": "ui-platform-transition",
+      "repo": "android/animation-samples",
+      "ref": "df3196dabfc0a6c04b13d343570b2fc3aec6d0dc",
+      "path": "BasicTransition/Application/src/main/java/com/example/android/basictransition/BasicTransitionFragment.java",
+      "start": 82,
+      "end": 108,
+      "blob_sha": "ab70d0bd82001bfc9ddae2d05eb3b72cb332d1f1",
+      "sha256": "40be7926f31db6c3142bca76c5d663e15ce6740899e7a6bff9ec40323d63802e",
+      "bytes": 1286,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "accessibility-set-text",
+      "repo": "appium/appium-uiautomator2-server",
+      "ref": "5412fdb389363e3d94ccb36d3b72ee61adfb2b1e",
+      "path": "app/src/main/java/io/appium/uiautomator2/handler/SendKeysToElement.java",
+      "start": 62,
+      "end": 96,
+      "blob_sha": "a243b7162e64b8a27add83c6c0c01dca87fbee52",
+      "sha256": "b63ead11bbbaebc07d66a0f990424f241dc1177289ed52c17668ca63674250db",
+      "bytes": 1449,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "accessibility-tree-serialize",
+      "repo": "appium/appium-uiautomator2-server",
+      "ref": "5412fdb389363e3d94ccb36d3b72ee61adfb2b1e",
+      "path": "app/src/main/java/io/appium/uiautomator2/core/AccessibilityNodeInfoDumper.java",
+      "start": 197,
+      "end": 228,
+      "blob_sha": "d2be36ff45379a0621dbc014b6b34db202de93da",
+      "sha256": "f8665ea51970ade9453e980b4e22759500bcc8d3c2abd1cda09a31c6a2ec75ca",
+      "bytes": 1282,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "accessibility-tree-dump",
+      "repo": "appium/appium-uiautomator2-server",
+      "ref": "5412fdb389363e3d94ccb36d3b72ee61adfb2b1e",
+      "path": "app/src/main/java/io/appium/uiautomator2/core/AccessibilityNodeInfoDumper.java",
+      "start": 302,
+      "end": 317,
+      "blob_sha": "d2be36ff45379a0621dbc014b6b34db202de93da",
+      "sha256": "b4bbe1a6cad1354548aea99ebecffd085143cb66b493c089f7d2f051f94a9bf8",
+      "bytes": 574,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "platform-window-tree",
+      "repo": "LineageOS/android_frameworks_base",
+      "ref": "68ee585f54bc11b13a250f0365d12c0b9c2e5cf2",
+      "path": "core/java/android/accessibilityservice/AccessibilityService.java",
+      "start": 1073,
+      "end": 1123,
+      "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
+      "sha256": "07b037ce4f8c97617bf5163ea8191241b26b4560e86bd10bdb47c1453ccba9f2",
+      "bytes": 2764,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "platform-dispatch-gesture",
+      "repo": "LineageOS/android_frameworks_base",
+      "ref": "68ee585f54bc11b13a250f0365d12c0b9c2e5cf2",
+      "path": "core/java/android/accessibilityservice/AccessibilityService.java",
+      "start": 1286,
+      "end": 1315,
+      "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
+      "sha256": "6c005cdf334e487b5ce6f94952fc1e3485f88f90cf88d4bc0c71cc6994edab69",
+      "bytes": 1484,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "platform-global-action",
+      "repo": "LineageOS/android_frameworks_base",
+      "ref": "68ee585f54bc11b13a250f0365d12c0b9c2e5cf2",
+      "path": "core/java/android/accessibilityservice/AccessibilityService.java",
+      "start": 2560,
+      "end": 2572,
+      "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
+      "sha256": "f5cd80461f717834f97f8b6708e2914c9769ea3145aa5fe6e6976b81e7c576e2",
+      "bytes": 542,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "platform-display-screenshot",
+      "repo": "LineageOS/android_frameworks_base",
+      "ref": "68ee585f54bc11b13a250f0365d12c0b9c2e5cf2",
+      "path": "core/java/android/accessibilityservice/AccessibilityService.java",
+      "start": 2705,
+      "end": 2735,
+      "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
+      "sha256": "7abe0b2bd7b02f0996332094fee5c295a24d2ec03d07fa55fb787c706a47359e",
+      "bytes": 1775,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "platform-window-screenshot",
+      "repo": "LineageOS/android_frameworks_base",
+      "ref": "68ee585f54bc11b13a250f0365d12c0b9c2e5cf2",
+      "path": "core/java/android/accessibilityservice/AccessibilityService.java",
+      "start": 2761,
+      "end": 2766,
+      "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
+      "sha256": "f9c621ab30b2459f11fd108dfff9c12e15eb95410a18c69f8dcb412d68c638ad",
+      "bytes": 350,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "face-live-inference",
+      "repo": "google-ai-edge/mediapipe-samples",
+      "ref": "ece8a1f99726a364509be9d07835a69ef65d3e35",
+      "path": "examples/face_landmarker/android/app/src/main/java/com/google/mediapipe/examples/facelandmarker/FaceLandmarkerHelper.kt",
+      "start": 147,
+      "end": 200,
+      "blob_sha": "b6a76fc179ba66be77434900aaf67e305b5b3b1f",
+      "sha256": "a30568f8404320eb1807753e1fc94cbb36285adea92b659faf3cf33e0f08f929",
+      "bytes": 1963,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "face-blendshapes",
+      "repo": "google-ai-edge/mediapipe-samples",
+      "ref": "ece8a1f99726a364509be9d07835a69ef65d3e35",
+      "path": "examples/face_landmarker/android/app/src/main/java/com/google/mediapipe/examples/facelandmarker/fragment/FaceBlendshapesResultAdapter.kt",
+      "start": 34,
+      "end": 44,
+      "blob_sha": "09fabd2713423b96bd8707a4914ff033c9056b54",
+      "sha256": "24065f4f15001d2e4f0f958dc383a745cd507abdcb31650603ee209e46298b9f",
+      "bytes": 582,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "consented-document-import",
+      "repo": "android/storage-samples",
+      "ref": "4aee388a401243a954300c677b91fa098a5daf4e",
+      "path": "ActionOpenDocument/app/src/main/java/com/example/android/actionopendocument/MainActivity.kt",
+      "start": 86,
+      "end": 135,
+      "blob_sha": "23d1eb3b5abe91c866586d7fa094a9dd0bce3adf",
+      "sha256": "01a81236c6800c9e374bc16e2d568ff2b8a8f5624eda838df06b001d046a5b7d",
+      "bytes": 2433,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "health-permission-read",
+      "repo": "android/health-samples",
+      "ref": "8613828d6309c00bec8a7704cced9fc445bd018f",
+      "path": "health-connect/HealthConnectSample/app/src/main/java/com/example/healthconnectsample/data/HealthConnectManager.kt",
+      "start": 115,
+      "end": 141,
+      "blob_sha": "b4d30df8a734a38a31b137cf5eeb59a12d73236c",
+      "sha256": "227bf2a6dfde33f988f7472079d8cb1ec021d134eac750e2ec0388b1317a0e39",
+      "bytes": 1264,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "signed-live-code-manifest",
+      "repo": "cashapp/zipline",
+      "ref": "62759c277fa660917098e2a45ad99d8b22f85993",
+      "path": "zipline-loader/src/commonMain/kotlin/app/cash/zipline/loader/ManifestVerifier.kt",
+      "start": 48,
+      "end": 100,
+      "blob_sha": "58b0ad0e8620abe640ff7cfa79aead94b7918474",
+      "sha256": "ca20b4f0a2c66caf22cac8891b250129abc397173e609540c371025f97cce95e",
+      "bytes": 1636,
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "live-code-push-reload",
+      "repo": "cashapp/zipline",
+      "ref": "62759c277fa660917098e2a45ad99d8b22f85993",
+      "path": "zipline-loader/src/commonMain/kotlin/app/cash/zipline/loader/FastCodeUpdates.kt",
+      "start": 36,
+      "end": 67,
+      "blob_sha": "65d8b56a46503e81725318049c9ea351020470f0",
+      "sha256": "df51ff6c88ee0985ed24bc8a5edc29c05f950a60025ed08aefb8e11f357a32e4",
+      "bytes": 1012,
+      "license": "Apache-2.0"
+    }
+  ],
+  "negative_donors": [
+    {
+      "repo": "Mangi-11/Eta",
+      "ref": "1342f8f1d2bd5a06a3fe57fd37e8dd6f6bd4380c",
+      "reason": "PolyForm Noncommercial 1.0.0; architecture/failure-mode study only; no direct composition"
+    }
+  ]
+}
