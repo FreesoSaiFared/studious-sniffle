@@ -17,7 +17,7 @@
       "start": 82,
       "end": 108,
       "blob_sha": "ab70d0bd82001bfc9ddae2d05eb3b72cb332d1f1",
-      "sha256": "40be7926f31db6c3142bca76c5d663e15ce6740899e7a6bff9ec40323d63802e",
+      "sha256": "3f1a8f87fd7a92252c1713e7e09a3035e5f5d12d33ca34250ab1a305e6bf5c87",
       "bytes": 1286,
       "license": "Apache-2.0"
     },
@@ -29,7 +29,7 @@
       "start": 62,
       "end": 96,
       "blob_sha": "a243b7162e64b8a27add83c6c0c01dca87fbee52",
-      "sha256": "b63ead11bbbaebc07d66a0f990424f241dc1177289ed52c17668ca63674250db",
+      "sha256": "d839b1ab86a6c7822b62de6d4f846bb69c9605f34dc3cf1f46728722b6320390",
       "bytes": 1449,
       "license": "Apache-2.0"
     },
@@ -41,7 +41,7 @@
       "start": 197,
       "end": 228,
       "blob_sha": "d2be36ff45379a0621dbc014b6b34db202de93da",
-      "sha256": "f8665ea51970ade9453e980b4e22759500bcc8d3c2abd1cda09a31c6a2ec75ca",
+      "sha256": "5e5a9e25a230937b22d48171f30508d9a83183c92562df61b965187ed82be123",
       "bytes": 1282,
       "license": "Apache-2.0"
     },
@@ -53,7 +53,7 @@
       "start": 302,
       "end": 317,
       "blob_sha": "d2be36ff45379a0621dbc014b6b34db202de93da",
-      "sha256": "b4bbe1a6cad1354548aea99ebecffd085143cb66b493c089f7d2f051f94a9bf8",
+      "sha256": "bed30f3fd66ae7cb7abbdfad2c7e6ad82b49f9f9d14ba9322935f3b19110be02",
       "bytes": 574,
       "license": "Apache-2.0"
     },
@@ -65,7 +65,7 @@
       "start": 1073,
       "end": 1123,
       "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
-      "sha256": "07b037ce4f8c97617bf5163ea8191241b26b4560e86bd10bdb47c1453ccba9f2",
+      "sha256": "c1aee5e662e5d29bf6f85b38e6f79e3d47b5354006db89c18d010dd125ca72b7",
       "bytes": 2764,
       "license": "Apache-2.0"
     },
@@ -77,7 +77,7 @@
       "start": 1286,
       "end": 1315,
       "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
-      "sha256": "6c005cdf334e487b5ce6f94952fc1e3485f88f90cf88d4bc0c71cc6994edab69",
+      "sha256": "9b259eeee4d864310b9b6eb171fadce37c552330103019e515a3de8970dfad6a",
       "bytes": 1484,
       "license": "Apache-2.0"
     },
@@ -89,7 +89,7 @@
       "start": 2560,
       "end": 2572,
       "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
-      "sha256": "f5cd80461f717834f97f8b6708e2914c9769ea3145aa5fe6e6976b81e7c576e2",
+      "sha256": "5a2416098acf2bb9f9e09824819d3ac3950061052aaa6d72f9c5ea86dd5ba546",
       "bytes": 542,
       "license": "Apache-2.0"
     },
@@ -101,7 +101,7 @@
       "start": 2705,
       "end": 2735,
       "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
-      "sha256": "7abe0b2bd7b02f0996332094fee5c295a24d2ec03d07fa55fb787c706a47359e",
+      "sha256": "df2eb5252a6b6ce842a46d3bdf4f771a3440eee7431d7629b18fae21e2524ec7",
       "bytes": 1775,
       "license": "Apache-2.0"
     },
@@ -113,7 +113,7 @@
       "start": 2761,
       "end": 2766,
       "blob_sha": "19ffc17f6a94621c50cba7754a67909acfacc7bc",
-      "sha256": "f9c621ab30b2459f11fd108dfff9c12e15eb95410a18c69f8dcb412d68c638ad",
+      "sha256": "dfe34dda261163f9e527190cfe29a8588290de124ee28600de1636d97471a9f0",
       "bytes": 350,
       "license": "Apache-2.0"
     },
@@ -125,7 +125,7 @@
       "start": 147,
       "end": 200,
       "blob_sha": "b6a76fc179ba66be77434900aaf67e305b5b3b1f",
-      "sha256": "a30568f8404320eb1807753e1fc94cbb36285adea92b659faf3cf33e0f08f929",
+      "sha256": "ce580f063b66134665d15da7a28270793af491b09122463c162f1f7ce735780c",
       "bytes": 1963,
       "license": "Apache-2.0"
     },
@@ -137,7 +137,7 @@
       "start": 34,
       "end": 44,
       "blob_sha": "09fabd2713423b96bd8707a4914ff033c9056b54",
-      "sha256": "24065f4f15001d2e4f0f958dc383a745cd507abdcb31650603ee209e46298b9f",
+      "sha256": "f53046f0a6dfd11b5b6f5c29ef5df11af74c9d3eb496a39194e18c5007ce3bb8",
       "bytes": 582,
       "license": "Apache-2.0"
     },
@@ -149,7 +149,7 @@
       "start": 86,
       "end": 135,
       "blob_sha": "23d1eb3b5abe91c866586d7fa094a9dd0bce3adf",
-      "sha256": "01a81236c6800c9e374bc16e2d568ff2b8a8f5624eda838df06b001d046a5b7d",
+      "sha256": "d34f1ea543a45211f08f06a6c25abcc5dcb485e90d122e4b4487cf162ad56c30",
       "bytes": 2433,
       "license": "Apache-2.0"
     },
@@ -161,7 +161,7 @@
       "start": 115,
       "end": 141,
       "blob_sha": "b4d30df8a734a38a31b137cf5eeb59a12d73236c",
-      "sha256": "227bf2a6dfde33f988f7472079d8cb1ec021d134eac750e2ec0388b1317a0e39",
+      "sha256": "79e55f850fcdf902dc213b8ef72c157567b018855d96f3005d63f0a21a0d8e88",
       "bytes": 1264,
       "license": "Apache-2.0"
     },
@@ -173,7 +173,7 @@
       "start": 48,
       "end": 100,
       "blob_sha": "58b0ad0e8620abe640ff7cfa79aead94b7918474",
-      "sha256": "ca20b4f0a2c66caf22cac8891b250129abc397173e609540c371025f97cce95e",
+      "sha256": "46392623cc10f7058ef78ba8f875e26f82c27a68a948d3b7bb427bce78a5a498",
       "bytes": 1636,
       "license": "Apache-2.0"
     },
@@ -185,7 +185,7 @@
       "start": 36,
       "end": 67,
       "blob_sha": "65d8b56a46503e81725318049c9ea351020470f0",
-      "sha256": "df51ff6c88ee0985ed24bc8a5edc29c05f950a60025ed08aefb8e11f357a32e4",
+      "sha256": "873859af601003e4484cc0c31a01f0257ea810eb00b37ce5f6e44d96a11d401d",
       "bytes": 1012,
       "license": "Apache-2.0"
     }
@@ -196,5 +196,10 @@
       "ref": "1342f8f1d2bd5a06a3fe57fd37e8dd6f6bd4380c",
       "reason": "PolyForm Noncommercial 1.0.0; architecture/failure-mode study only; no direct composition"
     }
-  ]
+  ],
+  "hash_authority": "Python hashlib over bytes re-extracted by git show on GitHub Actions",
+  "hash_correction_receipt": {
+    "failed_run_id": 33392435647,
+    "reason": "in-session pure-JS SHA-256 implementation produced incorrect long-input digests; replaced by Git re-extraction + Python hashlib values"
+  }
 }
