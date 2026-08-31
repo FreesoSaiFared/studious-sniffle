@@ -13,7 +13,7 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
     private static final int REQ_CONTEXT_DOCUMENT=41;
-    private LinearLayout root; private TextView status,automationResult,behaviorResult,contextResult; private EditText endpoint,token,automationPrompt,targetPackage,behaviorKeyId,behaviorPublicKey,behaviorBundle;
+    private LinearLayout root; private TextView status,automationResult,behaviorResult,contextResult,diagnosticResult; private EditText endpoint,token,automationPrompt,targetPackage,behaviorKeyId,behaviorPublicKey,behaviorBundle;
     private int revealOrder=0;
     @Override public void onCreate(Bundle b){super.onCreate(b);build();}
     @Override public void onResume(){super.onResume();if(status!=null)status.setText(CapabilityProbe.summary(this));}
@@ -44,6 +44,9 @@ public class MainActivity extends Activity {
         if(Build.VERSION.SDK_INT>=31)add(button("Exact alarm access",v->startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())))));
         if(Build.VERSION.SDK_INT>=34)add(button("Full-screen intent access",v->startActivity(new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,Uri.parse("package:"+getPackageName())))));
         add(button("Accessibility settings",v->startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))));
+        diagnosticResult=new TextView(this);diagnosticResult.setText("No accessibility diagnostics yet.");diagnosticResult.setTextSize(14);PremiumUi.body(diagnosticResult);add(diagnosticResult);
+        add(button("Accessibility tree probe",v->runTreeProbe()));
+        add(button("Accessibility screenshot probe",v->runScreenshotProbe()));
         add(button("Microphone permission",v->{if(Build.VERSION.SDK_INT>=23)requestPermissions(new String[]{"android.permission.RECORD_AUDIO"},7);}));
 
         TextView autoHead=new TextView(this);autoHead.setText("CHATGPT APP AUTOMATION");autoHead.setTextSize(20);autoHead.setTypeface(Typeface.DEFAULT_BOLD);autoHead.setPadding(0,32,0,8);PremiumUi.heading(autoHead);add(autoHead);
@@ -67,6 +70,21 @@ public class MainActivity extends Activity {
         add(button("Run local surprise-demo",v->{Intent i=new Intent(this,InterruptionActivity.class);i.putExtra("prompt","DO NOT THINK. Answer within two seconds. Ready to see it?");i.putExtra("mode","choice");startActivity(i);}));
         add(button("Run local audio-answer demo",v->{Intent i=new Intent(this,InterruptionActivity.class);i.putExtra("prompt","Answer out loud now. Ready?");i.putExtra("mode","audio");startActivity(i);}));
         setContentView(sv);
+    }
+
+    private void runTreeProbe(){
+        diagnosticResult.setText("Running tree probe…");
+        new Thread(()->{
+            String r=AccessibilityDiagnostics.treeProbe();
+            runOnUiThread(()->diagnosticResult.setText(r));
+        },"accessibility-tree-probe").start();
+    }
+    private void runScreenshotProbe(){
+        diagnosticResult.setText("Running screenshot probe…");
+        new Thread(()->{
+            String r=AccessibilityDiagnostics.screenshotProbe();
+            runOnUiThread(()->diagnosticResult.setText(r));
+        },"accessibility-screenshot-probe").start();
     }
 
     private void openContextDocument(){
