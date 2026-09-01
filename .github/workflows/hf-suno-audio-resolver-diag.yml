@@ -1,0 +1,66 @@
+name: HF Suno Audio Resolver Diagnostic
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Probe dataset viewer audio resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p diag
+          python3 - <<'PY'
+          import json, pathlib, urllib.parse, urllib.request, urllib.error
+          OUT=pathlib.Path("diag")
+          datasets=["zuhri025/suno-audio","ai-music/ai-music-deduplicated"]
+          clip="000397b5-ee2a-4d7d-96f9-233499b6f87d"
+          base="https://datasets-server.huggingface.co"
+
+          def get(url):
+              req=urllib.request.Request(url,headers={"User-Agent":"ckut-suno-evidence-quarry/1"})
+              try:
+                  with urllib.request.urlopen(req,timeout=60) as r:
+                      body=r.read()
+                      return {"status":r.status,"headers":dict(r.headers),"body":body.decode("utf-8","replace")}
+              except urllib.error.HTTPError as e:
+                  return {"status":e.code,"headers":dict(e.headers),"body":e.read().decode("utf-8","replace")}
+              except Exception as e:
+                  return {"status":0,"headers":{},"body":repr(e)}
+
+          allout={}
+          for ds in datasets:
+              splits_url=base+"/splits?"+urllib.parse.urlencode({"dataset":ds})
+              s=get(splits_url)
+              allout[ds]={"splits":s}
+              try:
+                  sj=json.loads(s["body"])
+              except Exception:
+                  sj={}
+              for item in sj.get("splits",[]):
+                  cfg=item["config"]; split=item["split"]
+                  key=f"{cfg}:{split}"
+                  q={"dataset":ds,"config":cfg,"split":split,"query":clip,"offset":0,"length":5}
+                  allout[ds][key+".search"]=get(base+"/search?"+urllib.parse.urlencode(q))
+                  where='"id"=\''+clip+"\'"
+                  q={"dataset":ds,"config":cfg,"split":split,"where":where,"offset":0,"length":5}
+                  allout[ds][key+".filter"]=get(base+"/filter?"+urllib.parse.urlencode(q))
+                  q={"dataset":ds,"config":cfg,"split":split,"offset":0,"length":2}
+                  allout[ds][key+".rows0"]=get(base+"/rows?"+urllib.parse.urlencode(q))
+              (OUT/(ds.replace("/","__")+".json")).write_text(json.dumps(allout[ds],indent=2))
+          print(json.dumps(allout,indent=2)[:30000])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hf-resolver-diag
+          path: diag
+          compression-level: 6
+          retention-days: 1
