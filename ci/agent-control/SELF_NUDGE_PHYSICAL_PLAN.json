@@ -1,0 +1,27 @@
+{
+  "schema": "INVERTED_CONTROL_PLAN/1",
+  "session_id": "self-nudge-physical-acceptance",
+  "workspace": ".",
+  "transactions": [
+    {
+      "id": "host-preflight",
+      "action": "ai_prompt",
+      "prompt": "Recheck direct Desktop Commander now. Do not substitute Remote Desktop Commander. If direct Desktop Commander is available, answer with the canonical host workspace and exact ADB path. Otherwise answer BLOCKED_DIRECT_DESKTOP_COMMANDER."
+    },
+    {
+      "id": "host-checkpoint",
+      "action": "checkpoint",
+      "message": "Host preflight: ${ai.host-preflight}"
+    },
+    {
+      "id": "device-frontier",
+      "action": "ai_prompt",
+      "prompt": "Using accepted diagnostic APK SHA-256 bfdc67492b960be0f5860b2ce9228f7112337f20437ce3c0442c0e4e4809b85e and ci/device-acceptance/run-adb-acceptance.ps1, return the next single executable transition. Preserve BLOCKED_NOT_EXECUTED if direct Desktop Commander or exactly one authorized ADB device is unavailable."
+    },
+    {
+      "id": "device-checkpoint",
+      "action": "checkpoint",
+      "message": "Physical acceptance frontier: ${ai.device-frontier}"
+    }
+  ]
+}
