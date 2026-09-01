@@ -1,0 +1,93 @@
+name: Suno Parquet Web-Fetch Mailbox
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Fetch pinned upstream object
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p mailbox
+          URL='https://huggingface.co/datasets/nyuuzyou/suno/resolve/dd95495c415eea043c250f12da595de2ad4cad7f/data/train-00000-of-00001.parquet?download=true'
+          printf '%s\n' "$URL" > mailbox/source-url.txt
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 \
+            --write-out '%{url_effective}\n' \
+            --output mailbox/suno.parquet "$URL" > mailbox/effective-url.txt
+          stat -c '%s' mailbox/suno.parquet > mailbox/upstream.bytes
+          sha256sum mailbox/suno.parquet | awk '{print $1}' > mailbox/upstream.sha256
+          split --bytes=80M --numeric-suffixes=0 --suffix-length=2 mailbox/suno.parquet mailbox/part-
+          sha256sum mailbox/part-* > mailbox/pieces.sha256
+          ls -l mailbox/part-* > mailbox/pieces.ls
+          python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path("mailbox")
+          parts=[]
+          for f in sorted(p.glob("part-*")):
+              parts.append({"name":f.name,"bytes":f.stat().st_size})
+          m={
+              "source_url":(p/"source-url.txt").read_text().strip(),
+              "effective_url":(p/"effective-url.txt").read_text().strip(),
+              "upstream_bytes":int((p/"upstream.bytes").read_text()),
+              "upstream_sha256":(p/"upstream.sha256").read_text().strip(),
+              "parts":parts,
+          }
+          (p/"manifest.json").write_text(json.dumps(m,indent=2)+"\n")
+          print(json.dumps(m,indent=2))
+          PY
+
+      - name: Upload manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: suno-manifest
+          path: |
+            mailbox/manifest.json
+            mailbox/source-url.txt
+            mailbox/effective-url.txt
+            mailbox/upstream.bytes
+            mailbox/upstream.sha256
+            mailbox/pieces.sha256
+            mailbox/pieces.ls
+          compression-level: 0
+          retention-days: 1
+
+      - name: Upload part 00
+        uses: actions/upload-artifact@v4
+        with:
+          name: suno-part-00
+          path: mailbox/part-00
+          compression-level: 0
+          retention-days: 1
+
+      - name: Upload part 01
+        uses: actions/upload-artifact@v4
+        with:
+          name: suno-part-01
+          path: mailbox/part-01
+          compression-level: 0
+          retention-days: 1
+
+      - name: Upload part 02
+        uses: actions/upload-artifact@v4
+        with:
+          name: suno-part-02
+          path: mailbox/part-02
+          compression-level: 0
+          retention-days: 1
+
+      - name: Upload part 03
+        uses: actions/upload-artifact@v4
+        with:
+          name: suno-part-03
+          path: mailbox/part-03
+          compression-level: 0
+          retention-days: 1
