@@ -1,0 +1,45 @@
+name: Suno Public Clip Resolve Diagnostic
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Resolve public clip and fetch audio
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p diag
+          ID='000397b5-ee2a-4d7d-96f9-233499b6f87d'
+          API="https://studio-api.prod.suno.com/api/clip/$ID"
+          code=$(curl -L -sS -D diag/clip.headers -o diag/clip.json -w '%{http_code}' "$API" || true)
+          echo "$code" > diag/clip.http
+          cat diag/clip.json || true
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path("diag")
+          try:j=json.loads((p/"clip.json").read_text())
+          except Exception as e:
+              print("JSON_ERROR",e); raise SystemExit(0)
+          u=j.get("audio_url") or ""
+          (p/"resolved-url.txt").write_text(u+"\n")
+          print("AUDIO_URL",u)
+          PY
+          U=$(cat diag/resolved-url.txt || true)
+          if [ -n "$U" ]; then
+            curl -L -sS --fail-with-body -D diag/audio.headers -o diag/audio.bin -w '%{http_code}\t%{size_download}\t%{content_type}\n' "$U" > diag/audio.curl || true
+            sha256sum diag/audio.bin > diag/audio.sha256 2>/dev/null || true
+            stat -c '%s' diag/audio.bin > diag/audio.bytes 2>/dev/null || true
+            file diag/audio.bin > diag/audio.file 2>/dev/null || true
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suno-public-resolve-diag
+          path: diag
+          compression-level: 6
+          retention-days: 1
