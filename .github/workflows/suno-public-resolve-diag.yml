@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Resolve public clip and fetch audio
+      - name: Resolve public clip and fetch media variants
         shell: bash
         run: |
           set -euo pipefail
@@ -19,24 +19,33 @@ jobs:
           API="https://studio-api.prod.suno.com/api/clip/$ID"
           code=$(curl -L -sS -D diag/clip.headers -o diag/clip.json -w '%{http_code}' "$API" || true)
           echo "$code" > diag/clip.http
-          cat diag/clip.json || true
           python3 - <<'PY'
           import json,pathlib
           p=pathlib.Path("diag")
-          try:j=json.loads((p/"clip.json").read_text())
-          except Exception as e:
-              print("JSON_ERROR",e); raise SystemExit(0)
-          u=j.get("audio_url") or ""
-          (p/"resolved-url.txt").write_text(u+"\n")
-          print("AUDIO_URL",u)
+          j=json.loads((p/"clip.json").read_text())
+          urls=[]
+          if j.get("audio_url"): urls.append(("audio_url",j["audio_url"]))
+          for i,m in enumerate(j.get("media_urls") or []):
+              if m.get("url"): urls.append((f"media_{i}_{m.get('content_type','unknown')}",m["url"]))
+          (p/"resolved.json").write_text(json.dumps(urls,indent=2)+"\n")
+          for name,url in urls:
+              print(name,url)
           PY
-          U=$(cat diag/resolved-url.txt || true)
-          if [ -n "$U" ]; then
-            curl -L -sS --fail-with-body -D diag/audio.headers -o diag/audio.bin -w '%{http_code}\t%{size_download}\t%{content_type}\n' "$U" > diag/audio.curl || true
-            sha256sum diag/audio.bin > diag/audio.sha256 2>/dev/null || true
-            stat -c '%s' diag/audio.bin > diag/audio.bytes 2>/dev/null || true
-            file diag/audio.bin > diag/audio.file 2>/dev/null || true
-          fi
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          p=pathlib.Path("diag")
+          for name,url in json.loads((p/"resolved.json").read_text()):
+              safe="".join(c if c.isalnum() or c in "-_." else "_" for c in name)
+              out=p/(safe+".bin")
+              hdr=p/(safe+".headers")
+              cmd=["curl","-L","-sS","--fail-with-body","-D",str(hdr),"-o",str(out),"-w","%{http_code}\t%{size_download}\t%{content_type}\n",url]
+              q=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+              (p/(safe+".curl")).write_text(q.stdout+q.stderr)
+              if out.exists():
+                  subprocess.run(["sha256sum",str(out)],stdout=(p/(safe+".sha256")).open("w"))
+                  subprocess.run(["file",str(out)],stdout=(p/(safe+".file")).open("w"))
+                  (p/(safe+".bytes")).write_text(str(out.stat().st_size)+"\n")
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: suno-public-resolve-diag
