@@ -47,6 +47,11 @@ jobs:
         shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install decryption dependency
+        run: python -m pip install --disable-pip-version-check 'cryptography>=46,<47'
       - uses: actions/download-artifact@v4
         with:
           name: suno-selection
@@ -60,7 +65,7 @@ jobs:
             sudo apt-get install -y ffmpeg
           fi
           ffprobe -version | head -1
-      - name: Fetch, hash, probe, and fully decode shard
+      - name: Fetch, decrypt, hash, probe, and fully decode shard
         run: python suno-full/fetch_shard.py --selected selection/selected.tsv --shard ${{ matrix.shard }} --shards 20 --out results
       - uses: actions/upload-artifact@v4
         if: always()
