@@ -24,6 +24,15 @@ public final class SignedModuleManifestTests {
         bad(()->SignedModuleManifest.verify(badEntry,now,keys,dex),"entry namespace");
         String tampered=json.replace("\"version\":1","\"version\":2");
         bad(()->SignedModuleManifest.verify(tampered,now,keys,dex),"manifest tamper");
+        for(String curve:new String[]{"secp384r1","secp521r1"}){
+            KeyPairGenerator otherGen=KeyPairGenerator.getInstance("EC");
+            otherGen.initialize(new ECGenParameterSpec(curve));
+            KeyPair other=otherGen.generateKeyPair();
+            Map<String,byte[]> foreignTrust=new HashMap<String,byte[]>();
+            foreignTrust.put("controller",other.getPublic().getEncoded());
+            String foreign=SignedModuleManifest.createForTestOrController("curve-"+curve,1,entry,dex,"controller",now-1000,now+60000,other.getPrivate());
+            bad(()->SignedModuleManifest.verify(foreign,now,foreignTrust,dex),curve+" signer rejected");
+        }
         System.out.println("SIGNED_MODULE_TESTS_PASS="+pass);
     }
 }
