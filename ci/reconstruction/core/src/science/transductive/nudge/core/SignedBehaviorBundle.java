@@ -2,7 +2,8 @@ package science.transductive.nudge.core;
 
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.*;
+import java.security.interfaces.ECPublicKey;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -51,11 +52,20 @@ public final class SignedBehaviorBundle {
     public static PublicKey decodeP256PublicKey(byte[] x509){
         try{
             PublicKey k=KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(x509));
-            if(!"EC".equalsIgnoreCase(k.getAlgorithm()))throw new IllegalArgumentException("not EC key");
+            if(!"EC".equalsIgnoreCase(k.getAlgorithm())||!(k instanceof ECPublicKey)||!isP256((ECPublicKey)k))throw new IllegalArgumentException("not P-256 key");
             return k;
         }catch(GeneralSecurityException e){throw new IllegalArgumentException("bad P-256 public key",e);}
     }
 
+    private static boolean isP256(ECPublicKey k)throws GeneralSecurityException{
+        AlgorithmParameters p=AlgorithmParameters.getInstance("EC");
+        p.init(new ECGenParameterSpec("secp256r1"));
+        ECParameterSpec expected=p.getParameterSpec(ECParameterSpec.class),actual=k.getParams();
+        return actual!=null&&actual.getCofactor()==expected.getCofactor()&&
+            actual.getOrder().equals(expected.getOrder())&&
+            actual.getGenerator().equals(expected.getGenerator())&&
+            actual.getCurve().equals(expected.getCurve());
+    }
     private static boolean verifyP256(byte[] x509,byte[] message,byte[] signature){
         try{Signature s=Signature.getInstance("SHA256withECDSA");s.initVerify(decodeP256PublicKey(x509));s.update(message);return s.verify(signature);}
         catch(GeneralSecurityException|IllegalArgumentException e){return false;}
