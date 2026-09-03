@@ -1,12 +1,12 @@
 {
   "schema": "INVERTED_CONTROL_PLAN/1",
-  "session_id": "self-nudge-physical-acceptance-20260903",
+  "session_id": "self-nudge-physical-acceptance-20260903-r2",
   "workspace": ".",
   "transactions": [
     {
       "id": "host-preflight",
       "action": "ai_prompt",
-      "prompt": "Recheck the active tool registry for DIRECT Desktop Commander now. Do not substitute Remote Desktop Commander. If direct Desktop Commander is absent, answer exactly BLOCKED_DIRECT_DESKTOP_COMMANDER. If present, call its fresh health/config primitive and return a compact PASS receipt naming the direct tool and canonical Windows host."
+      "prompt": "Recheck the active tool registry for DIRECT Desktop Commander now, fresh in this response. Do not substitute Remote Desktop Commander. If direct Desktop Commander is absent, answer exactly BLOCKED_DIRECT_DESKTOP_COMMANDER. If present, immediately call its fresh health/config primitive and return a compact PASS receipt naming the direct tool and canonical Windows host."
     },
     {
       "id": "host-checkpoint",
@@ -16,7 +16,7 @@
     {
       "id": "adb-preflight",
       "action": "ai_prompt",
-      "prompt": "Given host preflight=${ai.host-preflight}, own the next transaction. If it is BLOCKED_DIRECT_DESKTOP_COMMANDER, do not use a substitute and answer BLOCKED_NOT_EXECUTED. Otherwise, through DIRECT Desktop Commander inspect E:\\android\\platform-tools\\adb.exe, run that exact adb.exe devices -l, and return ADB_PATH, version, and the exact authorized device rows. Require exactly one row whose state is device; otherwise answer BLOCKED_NOT_EXECUTED with the observed count/state."
+      "prompt": "Given host preflight=${ai.host-preflight}, own the next transaction. If it is BLOCKED_DIRECT_DESKTOP_COMMANDER, do not use any substitute and answer exactly BLOCKED_NOT_EXECUTED. Otherwise, through DIRECT Desktop Commander inspect E:\\android\\platform-tools\\adb.exe, run that exact adb.exe version and adb.exe devices -l, and return ADB_PATH, VERSION, and exact device rows. Require exactly one row in state device; otherwise answer BLOCKED_NOT_EXECUTED with observed count/state."
     },
     {
       "id": "adb-checkpoint",
