@@ -65,8 +65,12 @@ def fit_model(X,y,name):
     scores=cross_val_score(pipe,X,y,cv=cv,scoring="roc_auc")
     pipe.fit(X,y); lr=pipe[-1]
     coefs=lr.coef_[0]
+    training_scale=np.asarray(pipe[0].scale_,float)
+    raw_coefs=coefs/training_scale
     result.update({"status":"fit","class_balance":float(y.mean()),"cv_auc_mean":float(scores.mean()),"cv_auc_std":float(scores.std()),
-                   "coefficients_standardized":dict(sorted(zip(base_features,map(float,coefs)),key=lambda kv:-abs(kv[1])))})
+                   "coefficients_standardized":dict(sorted(zip(base_features,map(float,coefs)),key=lambda kv:-abs(kv[1]))),
+                   "training_feature_scale":dict(zip(base_features,map(float,training_scale))),
+                   "coefficients_raw":dict(zip(base_features,map(float,raw_coefs)))})
     return result
 
 pub=fit_model(Xpub,ypub,"public_reception_exploratory")
@@ -88,6 +92,16 @@ if good:
     stochasticity.sort(key=lambda r:-r["median_abs_delta_in_pair_sd"])
 else:
     M=np.empty((0,len(base_features))); pair_scale=np.ones(len(base_features)); stochasticity=[]
+
+for model in (pub,sel):
+    if model.get("status")=="fit":
+        raw=np.array([model["coefficients_raw"][k] for k in base_features],float)
+        common=raw*pair_scale
+        model["coefficients_pair_sd_common"]=dict(zip(base_features,map(float,common)))
+        model["gradient_coordinate"]="common_pair_standard_deviation"
+(out/"public_preference_model.json").write_text(json.dumps(pub,indent=2)+"\n")
+(out/"creator_selection_model.json").write_text(json.dumps(sel,indent=2)+"\n")
+
 (out/"same_input_stochasticity.json").write_text(json.dumps({
     "evidence_class":"identical_observable_input_sibling_acoustic_variance",
     "model_versions":model_versions,"n_pairs_both_features":len(good),"ranking":stochasticity
@@ -96,8 +110,8 @@ else:
 gradient_comparison={"evidence_class":"public_vs_creator_gradient_comparison","model_versions":model_versions,
                      "public_status":pub.get("status"),"creator_status":sel.get("status")}
 if pub.get("status")=="fit" and sel.get("status")=="fit":
-    pc=np.array([pub["coefficients_standardized"][k] for k in base_features],float)
-    sc=np.array([sel["coefficients_standardized"][k] for k in base_features],float)
+    pc=np.array([pub["coefficients_pair_sd_common"][k] for k in base_features],float)
+    sc=np.array([sel["coefficients_pair_sd_common"][k] for k in base_features],float)
     gradient_comparison.update({
       "cosine_similarity":float(np.dot(pc,sc)/(np.linalg.norm(pc)*np.linalg.norm(sc)+1e-12)),
       "sign_agreement_fraction":float(np.mean(np.sign(pc)==np.sign(sc))),
@@ -127,8 +141,8 @@ with (out/"operation_vectors.tsv").open("w",newline="",encoding="utf-8") as f:
 
 # operation-vector alignment against public and creator gradients; exploratory only
 alignment=[]
-pub_coef=np.array([pub["coefficients_standardized"][k] for k in base_features],float) if pub.get("status")=="fit" else None
-sel_coef=np.array([sel["coefficients_standardized"][k] for k in base_features],float) if sel.get("status")=="fit" else None
+pub_coef=np.array([pub["coefficients_pair_sd_common"][k] for k in base_features],float) if pub.get("status")=="fit" else None
+sel_coef=np.array([sel["coefficients_pair_sd_common"][k] for k in base_features],float) if sel.get("status")=="fit" else None
 for r in oprows:
     v=np.array([r["mean_d_"+k] for k in base_features],float)/pair_scale
     item={"relation":r["relation"],"n":r["n"],"evidence_class":"parent_child_lineage_acoustic_operation_vector",
@@ -177,10 +191,16 @@ receipt={"pair_manifest":manifest,"feature_records":len(records),"feature_ok":su
 for r in fail: receipt["failure_stages"][r.get("stage","unknown")]=receipt["failure_stages"].get(r.get("stage","unknown"),0)+1
 (out/"receipt.json").write_text(json.dumps(receipt,indent=2)+"\n")
 (out/"failures.jsonl").write_text("".join(json.dumps(r,separators=(",",":"))+"\n" for r in fail))
-target_families=("artist_clip+persona_root","cover_clip","concat_history","stem_from","history")
+target_family_relations={
+  "artist_clip+persona_root":{"artist_clip,persona_root"},
+  "cover_clip":{"cover_clip"},
+  "concat_history":{"concat_history"},
+  "stem_from":{"stem_from"},
+  "history":{"history"},
+}
 family_rows=[]
-for fam in target_families:
-    matched=[r for r in alignment if fam in r["relation"]]
+for fam,relation_names in target_family_relations.items():
+    matched=[r for r in alignment if r["relation"] in relation_names]
     usable=sum(int(r["n"]) for r in matched)
     family_rows.append({"family":fam,"usable_archive_edges":usable,
                         "status":"archive_sufficient" if usable>=30 else "residual_underpowered"})
