@@ -67,7 +67,7 @@ public final class SignedModuleManifest {
     }
     private static boolean verifyP256(byte[]x509,byte[]message,byte[]sig){
         try{
-            PublicKey k=KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(x509));
+            PublicKey k=SignedBehaviorBundle.decodeP256PublicKey(x509);
             Signature s=Signature.getInstance("SHA256withECDSA");s.initVerify(k);s.update(message);return s.verify(sig);
         }catch(GeneralSecurityException e){return false;}
     }
