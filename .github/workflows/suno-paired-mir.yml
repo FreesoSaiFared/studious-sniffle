@@ -1,0 +1,112 @@
+name: Suno Paired MIR v0
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: suno-paired-mir-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install DuckDB
+        run: python -m pip install --disable-pip-version-check 'duckdb>=1.5,<1.6'
+      - name: Fetch pinned metadata and reconstruct frozen 20K
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://huggingface.co/datasets/nyuuzyou/suno/resolve/dd95495c415eea043c250f12da595de2ad4cad7f/data/train-00000-of-00001.parquet?download=true'
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 -o suno.parquet "$URL"
+          test "$(stat -c '%s' suno.parquet)" = "256524679"
+          echo 'c544c5274e19cd89a69d8afd3ad850649a055ffa3ec8a1c1a98b923d8900807f  suno.parquet' | sha256sum -c -
+          python suno-full/prepare_selection.py --parquet suno.parquet --out selection
+          python suno-operational/prepare_paired_mir.py --parquet suno.parquet --selected selection/selected.tsv --edges selection/edges.tsv --out pairset
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paired-mir-pairset
+          path: pairset
+          compression-level: 6
+          retention-days: 3
+
+  analyze:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          name: paired-mir-pairset
+          path: pairset
+      - name: Install numeric and crypto dependencies
+        run: python -m pip install --disable-pip-version-check 'numpy>=2.2,<3' 'scipy>=1.15,<2' 'cryptography>=46,<47'
+      - name: Ensure ffmpeg
+        shell: bash
+        run: |
+          set -e
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Analyze ephemeral decrypted audio
+        run: python suno-operational/paired_mir_worker.py --targets pairset/targets.txt --shard ${{ matrix.shard }} --shards 20 --out results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paired-mir-${{ format('{0}', matrix.shard) }}
+          path: results
+          compression-level: 6
+          retention-days: 3
+          if-no-files-found: error
+
+  aggregate:
+    needs: [prepare,analyze]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          name: paired-mir-pairset
+          path: pairset
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: paired-mir-*
+          path: shard-results
+          merge-multiple: true
+      - name: Install modelling dependencies
+        run: python -m pip install --disable-pip-version-check 'numpy>=2.2,<3' 'scikit-learn>=1.7,<2'
+      - name: Aggregate matched-pair and operation models
+        run: python suno-operational/aggregate_paired_mir.py --pairset pairset --results shard-results --out aggregate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paired-mir-aggregate
+          path: aggregate
+          compression-level: 6
+          retention-days: 3
+          if-no-files-found: error
