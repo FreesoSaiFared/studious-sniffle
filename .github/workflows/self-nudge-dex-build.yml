@@ -48,6 +48,8 @@ jobs:
           java -cp "$OUT" science.transductive.nudge.core.CoreTests | tee "$GITHUB_WORKSPACE/ci/build/core-tests.log"
           java --add-modules jdk.httpserver -cp "$OUT" science.transductive.nudge.core.TransportTests | tee "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
           java -cp "$OUT" science.transductive.nudge.core.AutomationTests | tee "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
+          java -cp "$OUT" science.transductive.nudge.core.MiniJsonTests | tee "$GITHUB_WORKSPACE/ci/build/mini-json-tests.log"
+          java -Xmx512m -cp "$OUT" science.transductive.nudge.core.VmStressTests | tee "$GITHUB_WORKSPACE/ci/build/vm-stress-tests.log"
           java -cp "$OUT" science.transductive.nudge.core.BehaviorBundleTests | tee "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
           java -cp "$OUT" science.transductive.nudge.core.SignedBehaviorAcceptance | tee "$GITHUB_WORKSPACE/ci/build/signed-behavior-acceptance.log"
           java -cp "$OUT" science.transductive.nudge.core.ContextDocumentTests | tee "$GITHUB_WORKSPACE/ci/build/context-document-tests.log"
@@ -55,17 +57,19 @@ jobs:
           grep -q 'CORE_TESTS_PASS=17' "$GITHUB_WORKSPACE/ci/build/core-tests.log"
           grep -q 'TRANSPORT_TESTS_PASS=3' "$GITHUB_WORKSPACE/ci/build/transport-tests.log"
           grep -q 'AUTOMATION_TESTS_PASS=8' "$GITHUB_WORKSPACE/ci/build/automation-tests.log"
-          grep -q 'BEHAVIOR_BUNDLE_TESTS_PASS=10' "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
+          grep -q 'MINI_JSON_TESTS_PASS=8' "$GITHUB_WORKSPACE/ci/build/mini-json-tests.log"
+          grep -q 'VM_STRESS_TESTS_PASS=21' "$GITHUB_WORKSPACE/ci/build/vm-stress-tests.log"
+          grep -q 'BEHAVIOR_BUNDLE_TESTS_PASS=12' "$GITHUB_WORKSPACE/ci/build/behavior-bundle-tests.log"
           grep -q 'SIGNED_BEHAVIOR_ACCEPTANCE_PASS=7' "$GITHUB_WORKSPACE/ci/build/signed-behavior-acceptance.log"
           grep -q 'CONTEXT_DOCUMENT_TESTS_PASS=5' "$GITHUB_WORKSPACE/ci/build/context-document-tests.log"
-          grep -q 'SIGNED_MODULE_TESTS_PASS=7' "$GITHUB_WORKSPACE/ci/build/signed-module-tests.log"
+          grep -q 'SIGNED_MODULE_TESTS_PASS=9' "$GITHUB_WORKSPACE/ci/build/signed-module-tests.log"
 
       - name: Verify inverted-control debugger
         shell: bash
         run: |
           set -euo pipefail
           python3 ci/agent-control/test_inverted_control_debugger.py 2>&1 | tee ci/build/inverted-control-tests.log
-          grep -q 'INVERTED_CONTROL_TESTS_PASS=6' ci/build/inverted-control-tests.log
+          grep -q 'INVERTED_CONTROL_TESTS_PASS=10' ci/build/inverted-control-tests.log
 
       - name: Verify exact Source Quarry donor slices
         shell: bash
@@ -218,11 +222,13 @@ jobs:
             "core_tests":"17/17 PASS",
             "transport_tests":"3/3 PASS",
             "automation_tests":"8/8 PASS",
-            "inverted_control_tests":"6/6 PASS",
-            "behavior_bundle_tests":"10/10 PASS",
+            "mini_json_tests":"8/8 PASS",
+            "vm_stress_tests":"21/21 PASS",
+            "inverted_control_tests":"10/10 PASS",
+            "behavior_bundle_tests":"12/12 PASS",
             "signed_behavior_acceptance":"7/7 PASS",
             "context_document_tests":"5/5 PASS",
-            "signed_module_tests":"7/7 PASS",
+            "signed_module_tests":"9/9 PASS",
             "tier1_static_checks":"21/21 PASS",
             "tier2_static_checks":"14/14 PASS",
             "physical_harness_static_checks":"26/26 PASS",
@@ -254,6 +260,8 @@ jobs:
             ci/build/core-tests.log
             ci/build/transport-tests.log
             ci/build/automation-tests.log
+            ci/build/mini-json-tests.log
+            ci/build/vm-stress-tests.log
             ci/build/inverted-control-tests.log
             ci/agent-control/inverted_control_debugger.py
             ci/agent-control/test_inverted_control_debugger.py
