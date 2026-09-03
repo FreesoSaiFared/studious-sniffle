@@ -258,6 +258,17 @@ jobs:
             ci/agent-control/inverted_control_debugger.py
             ci/agent-control/test_inverted_control_debugger.py
             ci/agent-control/SELF_NUDGE_PHYSICAL_PLAN.json
+            ci/reconstruction/core/src
+            ci/reconstruction/core/test
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/WorkerClient.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/AutomationJournal.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/ChatGptAutomationEngine.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/CapabilityProbe.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/ContextDocumentContract.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/ContextDocumentStore.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/DeviceSelfTest.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/SignedModuleInstaller.java
+            ci/reconstruction/android/app/src/main/java/science/transductive/nudge/TrustedBehaviorKeys.java
             ci/build/behavior-bundle-tests.log
             ci/build/signed-behavior-acceptance.log
             ci/build/context-document-tests.log
