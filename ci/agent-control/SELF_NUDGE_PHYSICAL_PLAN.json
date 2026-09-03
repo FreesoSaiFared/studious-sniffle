@@ -1,27 +1,77 @@
 {
   "schema": "INVERTED_CONTROL_PLAN/1",
-  "session_id": "self-nudge-physical-acceptance",
+  "session_id": "self-nudge-physical-acceptance-20260903",
   "workspace": ".",
   "transactions": [
     {
       "id": "host-preflight",
       "action": "ai_prompt",
-      "prompt": "Recheck direct Desktop Commander now. Do not substitute Remote Desktop Commander. If direct Desktop Commander is available, answer with the canonical host workspace and exact ADB path. Otherwise answer BLOCKED_DIRECT_DESKTOP_COMMANDER."
+      "prompt": "Recheck the active tool registry for DIRECT Desktop Commander now. Do not substitute Remote Desktop Commander. If direct Desktop Commander is absent, answer exactly BLOCKED_DIRECT_DESKTOP_COMMANDER. If present, call its fresh health/config primitive and return a compact PASS receipt naming the direct tool and canonical Windows host."
     },
     {
       "id": "host-checkpoint",
       "action": "checkpoint",
-      "message": "Host preflight: ${ai.host-preflight}"
+      "message": "Direct host actuator preflight: ${ai.host-preflight}"
     },
     {
-      "id": "device-frontier",
+      "id": "adb-preflight",
       "action": "ai_prompt",
-      "prompt": "Using accepted diagnostic APK SHA-256 bfdc67492b960be0f5860b2ce9228f7112337f20437ce3c0442c0e4e4809b85e and ci/device-acceptance/run-adb-acceptance.ps1, return the next single executable transition. Preserve BLOCKED_NOT_EXECUTED if direct Desktop Commander or exactly one authorized ADB device is unavailable."
+      "prompt": "Given host preflight=${ai.host-preflight}, own the next transaction. If it is BLOCKED_DIRECT_DESKTOP_COMMANDER, do not use a substitute and answer BLOCKED_NOT_EXECUTED. Otherwise, through DIRECT Desktop Commander inspect E:\\android\\platform-tools\\adb.exe, run that exact adb.exe devices -l, and return ADB_PATH, version, and the exact authorized device rows. Require exactly one row whose state is device; otherwise answer BLOCKED_NOT_EXECUTED with the observed count/state."
     },
     {
-      "id": "device-checkpoint",
+      "id": "adb-checkpoint",
       "action": "checkpoint",
-      "message": "Physical acceptance frontier: ${ai.device-frontier}"
+      "message": "ADB/device preflight: ${ai.adb-preflight}"
+    },
+    {
+      "id": "accepted-apk",
+      "action": "ai_prompt",
+      "prompt": "Given adb preflight=${ai.adb-preflight}, continue only if exactly one authorized device is proven. Locate/materialize the exact accepted diagnostic APK for source commit e752d15c8c796564e17f93d01b66c81adb99e9ed with required SHA-256 bfdc67492b960be0f5860b2ce9228f7112337f20437ce3c0442c0e4e4809b85e. Verify bytes and SHA-256 before any install. Return the canonical Windows APK path plus verified hash/size. If this cannot be proven, answer BLOCKED_NOT_EXECUTED and do not install."
+    },
+    {
+      "id": "apk-checkpoint",
+      "action": "checkpoint",
+      "message": "Accepted APK materialization: ${ai.accepted-apk}"
+    },
+    {
+      "id": "base-device-acceptance",
+      "action": "ai_prompt",
+      "prompt": "Given ADB=${ai.adb-preflight} and APK=${ai.accepted-apk}, continue only when both are proven. Through DIRECT Desktop Commander run ci\\device-acceptance\\run-adb-acceptance.ps1 with the exact APK path, mandatory -ExpectedSha256 bfdc67492b960be0f5860b2ce9228f7112337f20437ce3c0442c0e4e4809b85e, and explicit -ConfirmInstall. Do NOT pass -EnableAccessibilityViaAdb unless owner/developer secure-setting authority is explicitly proven; otherwise allow the harness to emit its BLOCKED receipt and open Accessibility Settings. Return the exact SELF_NUDGE_ADB_DEVICE_ACCEPTANCE/1 status/boundary and evidence path. On any command exception, inspect it and return an AI_DEBUG_COMMAND repair rather than abandoning the transaction."
+    },
+    {
+      "id": "base-checkpoint",
+      "action": "checkpoint",
+      "message": "Base physical acceptance: ${ai.base-device-acceptance}"
+    },
+    {
+      "id": "chatgpt-device-acceptance",
+      "action": "ai_prompt",
+      "prompt": "Given base physical acceptance=${ai.base-device-acceptance}, run the same exact accepted APK/device harness with -RunChatGptProbe only if base status is PASS. Require installed com.openai.chatgpt, APPLIED, and ACCESSIBILITY AUTOMATION WORKS. If base is blocked/fail, preserve that state and answer BLOCKED_NOT_EXECUTED. Return exact receipt boundary/evidence."
+    },
+    {
+      "id": "chatgpt-checkpoint",
+      "action": "checkpoint",
+      "message": "ChatGPT physical automation acceptance: ${ai.chatgpt-device-acceptance}"
+    },
+    {
+      "id": "unknown-outcome-acceptance",
+      "action": "ai_prompt",
+      "prompt": "Given ChatGPT acceptance=${ai.chatgpt-device-acceptance}, run the harness with -RunChatGptProbe -RunUnknownOutcomeCase only if ChatGPT acceptance is PASS. Accept only if the app mechanically records UNKNOWN_OUTCOME after induced target interruption. Otherwise preserve the exact blocked/fail state. Return receipt boundary/evidence."
+    },
+    {
+      "id": "unknown-checkpoint",
+      "action": "checkpoint",
+      "message": "UNKNOWN_OUTCOME physical acceptance: ${ai.unknown-outcome-acceptance}"
+    },
+    {
+      "id": "receipt-audit",
+      "action": "ai_prompt",
+      "prompt": "Audit the final device evidence implied by base=${ai.base-device-acceptance}, chatgpt=${ai.chatgpt-device-acceptance}, unknown=${ai.unknown-outcome-acceptance}. Inspect JSON receipt, threadtime logcat and relevant UIAutomator XML through DIRECT Desktop Commander when available. Do not promote CI evidence to device evidence. Return either PHYSICAL_DEVICE_ACCEPTED with exact receipt path and key gates, or BLOCKED_NOT_EXECUTED with the single exact unresolved boundary."
+    },
+    {
+      "id": "final-checkpoint",
+      "action": "checkpoint",
+      "message": "Self-Nudge physical acceptance final frontier: ${ai.receipt-audit}"
     }
   ]
 }
