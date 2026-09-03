@@ -20,11 +20,13 @@ SELECT a.id,a.plays,a.ups,r.user_id,r.handle,r.major_model_version,
  r.metadata_gpt_description_prompt gpt_desc,r.metadata_negative_tags,r.metadata_type,r.metadata_task
 FROM agg a JOIN raw r ON r.obs_row_id=a.canonical_obs_row_id""")
 # only generation siblings; all members share exact observable input
-rows=con.execute("""SELECT * FROM clips WHERE metadata_type='gen' ORDER BY id""").fetchdf()
+cur=con.execute("""SELECT id,plays,ups,user_id,handle,major_model_version,created_ts,metadata_prompt,metadata_tags,gpt_desc,metadata_negative_tags,metadata_type,metadata_task FROM clips WHERE metadata_type='gen' ORDER BY id""")
+names=[d[0] for d in cur.description]
+rows=[dict(zip(names,r)) for r in cur.fetchall()]
 groups=collections.defaultdict(list)
 cols=["user_id","major_model_version","created_ts","metadata_prompt","metadata_tags","gpt_desc","metadata_negative_tags","metadata_task"]
-for rec in rows.to_dict("records"):
-    key=tuple("" if rec.get(c) is None else str(rec.get(c)) for c in cols)
+for rec in rows:
+    key=tuple("" if rec.get(col) is None else str(rec.get(col)) for col in cols)
     groups[key].append(rec)
 # child counts from already-frozen selected lineage edges
 child=collections.Counter()
