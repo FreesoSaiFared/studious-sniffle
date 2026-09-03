@@ -131,6 +131,11 @@ def run(plan_path,state_path,workspace,fresh=False,noninteractive=False,max_roun
             except (KeyboardInterrupt,SystemExit): raise
             except BaseException as e:
                 rounds+=1; failure={'id':t.get('id',str(i)),'action':t.get('action',''),'status':'EXCEPTION','exception_type':type(e).__name__,'exception':str(e),'traceback':traceback.format_exc(),'debug_round':rounds}
+                if isinstance(e,subprocess.CalledProcessError):
+                    failure['returncode']=e.returncode
+                    failure['command']=e.cmd
+                    failure['stdout']=e.output or ''
+                    failure['stderr']=e.stderr or ''
                 state['receipts'].append(failure); state['next_index']=i; save(state_path,state)
                 emit('exception',**failure,transaction=t,continuation_prompt='Inspect this failure and return one AI_DEBUG_COMMAND/1 JSON command. Prefer repair then retry. Valid ops: retry, skip, abort, replace_transaction, patch_file, shell.')
                 if rounds>max_rounds: raise AiAbort('debugger round limit exceeded')
