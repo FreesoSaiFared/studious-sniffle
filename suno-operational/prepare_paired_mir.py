@@ -9,7 +9,7 @@ ap.add_argument("--out",required=True)
 a=ap.parse_args()
 out=pathlib.Path(a.out); out.mkdir(parents=True,exist_ok=True)
 con=duckdb.connect(":memory:"); con.execute("PRAGMA threads=4")
-con.execute(f"CREATE TABLE raw AS SELECT row_number() over ()::BIGINT obs_row_id,* FROM read_parquet('{a.parquet}')")
+con.execute(f"CREATE VIEW raw AS SELECT row_number() over ()::BIGINT obs_row_id,* FROM read_parquet('{a.parquet}')")
 con.execute(f"CREATE TABLE selected AS SELECT * FROM read_csv_auto('{a.selected}',delim='\\t',header=true,all_varchar=true)")
 con.execute("""CREATE TABLE agg AS
 SELECT id,min(obs_row_id) canonical_obs_row_id,max(play_count) plays,max(upvote_count) ups
