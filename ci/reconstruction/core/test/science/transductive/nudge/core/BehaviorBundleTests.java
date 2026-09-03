@@ -28,6 +28,15 @@ public final class BehaviorBundleTests {
         Map<String,Double> hypotheses=new LinkedHashMap<String,Double>();hypotheses.put("tension_cue",0.35);
         AffectObservation observation=new AffectObservation("mediapipe","face-landmarker-x","user-consented-camera",now,0.9,features,hypotheses);
         ok(observation.json().contains("UNCERTAIN_OBSERVATION_NOT_GROUND_TRUTH"),"affect authority");
+        for(String curve:new String[]{"secp384r1","secp521r1"}){
+            KeyPairGenerator otherGen=KeyPairGenerator.getInstance("EC");
+            otherGen.initialize(new ECGenParameterSpec(curve));
+            KeyPair other=otherGen.generateKeyPair();
+            String foreign=SignedBehaviorBundle.createForTestOrController("curve-"+curve,now-1000,now+60000,"controller",payload,other.getPrivate());
+            Map<String,byte[]> foreignTrust=new HashMap<String,byte[]>();
+            foreignTrust.put("controller",other.getPublic().getEncoded());
+            bad(()->SignedBehaviorBundle.verify(foreign,now,foreignTrust),curve+" signer rejected");
+        }
         System.out.println("BEHAVIOR_BUNDLE_TESTS_PASS="+pass);
     }
 }
