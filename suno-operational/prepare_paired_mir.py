@@ -39,7 +39,7 @@ for key,members in groups.items():
     for i in range(len(members)):
       for j in range(i+1,len(members)):
         x,y=members[i],members[j]
-        raw="\x1f".join(key+[x["id"],y["id"]])
+        raw="\x1f".join(key+(x["id"],y["id"]))
         pairs.append({
           "family_id":hashlib.sha256(raw.encode()).hexdigest()[:32],
           "a_id":x["id"],"b_id":y["id"],"model":x["major_model_version"] or "",
