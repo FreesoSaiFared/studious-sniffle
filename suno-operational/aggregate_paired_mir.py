@@ -177,14 +177,27 @@ receipt={"pair_manifest":manifest,"feature_records":len(records),"feature_ok":su
 for r in fail: receipt["failure_stages"][r.get("stage","unknown")]=receipt["failure_stages"].get(r.get("stage","unknown"),0)+1
 (out/"receipt.json").write_text(json.dumps(receipt,indent=2)+"\n")
 (out/"failures.jsonl").write_text("".join(json.dumps(r,separators=(",",":"))+"\n" for r in fail))
-target_families=("artist_clip+persona_root","cover_clip","concat_history","stem_from","history")
+target_family_relations={
+    "artist_clip+persona_root":("artist_clip,persona_root",),
+    "cover_clip":("cover_clip",),
+    "concat_history":("concat_history",),
+    "stem_from":("stem_from",),
+    "history":("history",),
+}
 family_rows=[]
-for fam in target_families:
-    matched=[r for r in alignment if fam in r["relation"]]
+for fam,relations in target_family_relations.items():
+    matched=[r for r in alignment if r["relation"] in relations]
     usable=sum(int(r["n"]) for r in matched)
-    family_rows.append({"family":fam,"usable_archive_edges":usable,
-                        "status":"archive_sufficient" if usable>=30 else "residual_underpowered"})
+    if fam=="history" and usable>=30:
+        status="archive_sufficient_semantics_unresolved"
+    else:
+        status="archive_sufficient" if usable>=30 else "residual_underpowered"
+    item={"family":fam,"relations":list(relations),"usable_archive_edges":usable,"status":status}
+    if fam=="history":
+        item["causal_interpretation"]="blocked_until_relation_semantics_subdivided"
+    family_rows.append(item)
 gradient_disagreements=sum(bool(r.get("gradient_direction_disagreement")) for r in queue)
+exported_queue_count=min(250,len(queue))
 policy={
   "schema":"boozle-next-experiment-policy/0.1",
   "evidence_class":"archive_derived_mir_policy",
@@ -196,7 +209,8 @@ policy={
      "new_suno_credits":False,"public_n":pub.get("n",0),"creator_n":sel.get("n",0)},
     {"question":"operation_vectors","status":"partially_resolved","new_suno_credits":False,"families":family_rows},
     {"question":"public_operator_disagreement","status":"requires_blind_human_listening" if gradient_disagreements else "no_model_disagreement_detected",
-     "new_suno_credits":False,"queue_count":gradient_disagreements}
+     "new_suno_credits":False,"candidate_count":gradient_disagreements,
+     "queue_count":exported_queue_count,"exported_queue_count":exported_queue_count}
   ],
   "generation_zero_credit_candidates":[
     {"family":r["family"],"experiment":"controlled_same-input parent/intervention A-B repeat",
